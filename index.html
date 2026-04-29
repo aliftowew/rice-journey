@@ -1,0 +1,3159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rice Journey · Dashboard Distribusi Beras · Kemenko Pangan RI</title>
+<meta name="description" content="Dashboard analitik distribusi beras Indonesia: cost structure resmi Bapanas, HET 8 zona, waterfall biaya per tahap, side product breakdown." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,1,400;9..144,1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f4ede0;
+    --cream-2: #ece2cf;
+    --paper: #fbf7ed;
+    --ink: #1a1612;
+    --ink-soft: #3a3128;
+    --ink-light: #6b6155;
+    --muted: #8a7f6f;
+    --line: rgba(26, 22, 18, 0.10);
+    --line-strong: rgba(26, 22, 18, 0.22);
+
+    --emerald: #1e3a2a;
+    --emerald-soft: #3d6b4f;
+    --emerald-tint: #d6e4dc;
+    --rust: #a8472a;
+    --rust-deep: #7d3119;
+    --rust-tint: #f0d9cf;
+    --gold: #c89030;
+    --gold-soft: #e2b66a;
+    --gold-tint: #f5e8d0;
+    --indigo: #2d3a5e;
+    --indigo-soft: #4d6088;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(circle at 15% 0%, rgba(168,71,42,0.04), transparent 40%);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 700px) { .wrap { padding: 0 14px; } }
+
+  /* ============== INFO TOOLTIPS ============== */
+  .info-tip {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 12px;
+    text-align: center;
+    cursor: pointer;
+    margin-left: 5px;
+    position: relative;
+    user-select: none;
+    transition: all 0.15s;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+  .panel.dark .info-tip { border-color: rgba(244,237,224,0.4); color: rgba(244,237,224,0.6); }
+  .info-tip:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--gold-soft);
+  }
+  .info-tip.active {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .info-tip-popover {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 12px 14px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    width: 260px;
+    text-align: left;
+    z-index: 200;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 400;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .info-tip-popover strong {
+    color: var(--gold-soft);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .info-tip-popover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: var(--ink);
+  }
+  .info-tip.active .info-tip-popover {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  /* Adjust popover position for tips near right edge */
+  .info-tip.tip-right .info-tip-popover {
+    left: auto; right: -8px;
+    transform: none;
+  }
+  .info-tip.tip-right .info-tip-popover::before {
+    left: auto; right: 14px;
+    transform: none;
+  }
+  /* Position above for tips near bottom of viewport */
+  .info-tip.tip-up .info-tip-popover {
+    top: auto;
+    bottom: calc(100% + 10px);
+  }
+  .info-tip.tip-up .info-tip-popover::before {
+    bottom: auto; top: 100%;
+    border-bottom-color: transparent;
+    border-top-color: var(--ink);
+  }
+
+  /* ============== SECTION HEADERS ============== */
+  .section-header {
+    grid-column: span 12;
+    padding: 28px 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    border-bottom: 1px solid var(--line-strong);
+    margin-bottom: 4px;
+  }
+  .section-header:first-of-type { padding-top: 8px; }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--rust);
+    letter-spacing: 0.16em;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+  .section-title em { font-style: italic; color: var(--rust); }
+  .section-sub {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    text-align: right;
+    line-height: 1.4;
+    max-width: 340px;
+  }
+  @media (max-width: 800px) {
+    .section-header { flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 24px; }
+    .section-sub { margin-left: 0; text-align: left; max-width: none; }
+  }
+
+  /* ============== CALCULATOR ============== */
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    margin-top: 8px;
+  }
+  @media (max-width: 900px) {
+    .calc-grid { grid-template-columns: 1fr; }
+  }
+  .calc-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .calc-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .calc-row-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .calc-row-label {
+    font-size: 12.5px;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .calc-row-label .calc-step-no {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--rust);
+    font-weight: 700;
+    margin-right: 6px;
+    letter-spacing: 0.06em;
+  }
+  .calc-row-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .calc-row-value.dirty { color: var(--rust); }
+  .calc-row-value.dirty::after {
+    content: '●';
+    color: var(--rust);
+    font-size: 9px;
+    margin-left: 4px;
+  }
+  .calc-slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 28px;
+  }
+  .calc-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--cream-2);
+    border-radius: 100px;
+    cursor: pointer;
+    outline: none;
+  }
+  .calc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 2px solid var(--paper);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: transform 0.1s;
+  }
+  .calc-slider::-webkit-slider-thumb:hover { transform: scale(1.15); background: var(--rust); }
+  .calc-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 2px solid var(--paper);
+    cursor: pointer;
+  }
+  .calc-default-marker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .calc-output {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 6px;
+    padding: 22px 22px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: fit-content;
+    position: sticky;
+    top: 90px;
+  }
+  .calc-output-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .calc-output-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(244,237,224,0.5);
+    font-weight: 600;
+  }
+  .calc-output-value {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 144;
+    font-weight: 500;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    color: var(--cream);
+  }
+  .calc-output-value .currency {
+    font-size: 18px;
+    color: rgba(244,237,224,0.5);
+    margin-right: 6px;
+    font-weight: 400;
+  }
+  .calc-output-delta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(244,237,224,0.7);
+    margin-top: 2px;
+  }
+  .calc-output-delta strong { color: var(--gold-soft); font-weight: 700; }
+  .calc-output-delta.positive strong { color: #ff8a4c; }
+  .calc-output-delta.negative strong { color: #7dd3a3; }
+  .calc-output-divider {
+    border-top: 1px dashed rgba(244,237,224,0.18);
+    margin: 8px 0 4px;
+  }
+  .calc-output-het-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    color: rgba(244,237,224,0.85);
+    line-height: 1.3;
+  }
+  .calc-output-het-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--gold-soft);
+    margin-top: 2px;
+  }
+  .calc-output-status {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(168, 71, 42, 0.2);
+    border-left: 2px solid var(--rust);
+    border-radius: 0 3px 3px 0;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--cream);
+  }
+  .calc-output-status.under {
+    background: rgba(93, 138, 111, 0.25);
+    border-left-color: var(--emerald-soft);
+  }
+  .calc-output-status .arrow {
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .calc-reset-btn {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: transparent;
+    color: var(--cream);
+    border: 1px solid rgba(244,237,224,0.2);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s;
+    align-self: stretch;
+  }
+  .calc-reset-btn:hover {
+    background: var(--rust);
+    border-color: var(--rust);
+  }
+
+  /* ============== CALCULATOR DRAWER ============== */
+  .calc-drawer-fab {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 99;
+    background: var(--ink);
+    color: var(--cream);
+    border: 1.5px solid var(--ink);
+    border-radius: 100px;
+    padding: 14px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .calc-drawer-fab:hover {
+    background: var(--rust);
+    border-color: var(--rust);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22), 0 3px 8px rgba(0,0,0,0.12);
+  }
+  .calc-drawer-fab .fab-icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+  .calc-drawer-fab.hidden {
+    transform: translateY(80px);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .calc-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 22, 18, 0.45);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    backdrop-filter: blur(2px);
+  }
+  .calc-drawer-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .calc-drawer {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 480px;
+    max-width: 100%;
+    background: var(--paper);
+    z-index: 101;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+  }
+  .calc-drawer.open { transform: translateX(0); }
+  @media (max-width: 600px) {
+    .calc-drawer { width: 100%; }
+  }
+
+  .calc-drawer-head {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .calc-drawer-head-text .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 4px;
+  }
+  .calc-drawer-head-text h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .calc-drawer-head-text h2 em { font-style: italic; color: var(--rust); }
+  .calc-drawer-head-text .sub {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .calc-drawer-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--cream-2);
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-weight: 400;
+  }
+  .calc-drawer-close:hover {
+    background: var(--rust);
+    color: var(--cream);
+  }
+
+  .calc-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .calc-drawer-output {
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 6px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .calc-drawer-foot {
+    padding: 14px 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--cream);
+  }
+  .calc-drawer-foot button {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    color: var(--ink);
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .calc-drawer-foot button.primary {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+  .calc-drawer-foot button.primary:hover {
+    background: var(--rust);
+    border-color: var(--rust);
+  }
+  .calc-drawer-foot button:hover {
+    border-color: var(--ink);
+  }
+
+  /* Drawer-specific input row styling - more compact than original */
+  .calc-drawer .calc-row { padding: 6px 0; }
+  .calc-drawer .calc-row-head { gap: 8px; }
+  .calc-drawer .calc-row-label { font-size: 12px; }
+  .calc-drawer .calc-row-value { font-size: 12px; }
+
+  /* Calc output sub-elements re-styled for drawer context (no separate sticky panel) */
+  .calc-drawer .calc-output-block { gap: 2px; }
+  .calc-drawer .calc-output-value { font-size: 32px; }
+  .calc-drawer .calc-output-divider { margin: 6px 0 2px; }
+
+  /* ============== HEADER / FILTER BAR ============== */
+  header.dash-header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(244, 237, 224, 0.94);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-strong);
+    margin-bottom: 24px;
+  }
+  .header-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 24px;
+    padding: 14px 0;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 38px; height: 38px;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--paper);
+    position: relative; flex-shrink: 0;
+  }
+  .brand-mark::after {
+    content: ''; position: absolute; inset: 4px;
+    border-radius: 50%; border: 1px solid var(--rust);
+  }
+  .brand-mark span {
+    font-family: 'Fraunces', serif;
+    font-style: italic; font-weight: 600;
+    font-size: 16px; line-height: 1;
+  }
+  .brand-text .org {
+    font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted);
+    font-weight: 500; line-height: 1.2;
+  }
+  .brand-text .name {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: 17px; line-height: 1.1; margin-top: 2px;
+  }
+  .brand-text .name em { font-style: italic; color: var(--rust); }
+
+  .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .filter-block {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .filter-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+    font-weight: 500;
+  }
+  .grade-toggle {
+    display: inline-flex; background: var(--paper);
+    border: 1px solid var(--line-strong);
+    border-radius: 100px; padding: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .grade-toggle button {
+    padding: 6px 14px; border: none; background: transparent;
+    color: var(--muted); cursor: pointer;
+    border-radius: 100px; transition: all 0.18s;
+    font: inherit; letter-spacing: inherit;
+  }
+  .grade-toggle button.active { background: var(--ink); color: var(--cream); }
+  .filters select {
+    background: var(--paper);
+    border: 1px solid var(--line-strong);
+    border-radius: 100px;
+    padding: 7px 28px 7px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink); cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%231a1612' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+  @media (max-width: 800px) {
+    .header-row { grid-template-columns: 1fr; gap: 12px; padding: 12px 0; }
+    .filters { justify-content: flex-start; }
+  }
+
+  /* ============== TITLE ROW ============== */
+  .page-title-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: end;
+    padding: 8px 0 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--rust);
+    margin-bottom: 8px;
+  }
+  .eyebrow span { color: var(--muted); }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 144;
+    font-weight: 500;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+  }
+  h1 em { font-style: italic; color: var(--rust); }
+  .page-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    line-height: 1.7; text-align: right;
+  }
+  .page-meta strong { color: var(--ink); font-weight: 600; }
+  @media (max-width: 700px) {
+    .page-title-row { grid-template-columns: 1fr; }
+    .page-meta { text-align: left; }
+  }
+
+  /* ============== BENTO DASHBOARD GRID ============== */
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel.dark { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .panel.accent-rust { border-color: var(--rust); border-width: 1.5px; }
+  .panel.accent-emerald { border-color: var(--emerald); border-width: 1.5px; }
+
+  .panel-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .panel.dark .panel-head { border-bottom-color: rgba(244,237,224,0.12); }
+  .panel-head .panel-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 19px;
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+  }
+  .panel-head .panel-title em { font-style: italic; color: var(--rust); }
+  .panel.dark .panel-head .panel-title em { color: var(--gold-soft); }
+  .panel-head .panel-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; color: var(--muted);
+    margin-top: 4px; letter-spacing: 0.04em;
+  }
+  .panel.dark .panel-head .panel-sub { color: rgba(244,237,224,0.55); }
+
+  .panel-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 3px;
+    background: var(--cream-2);
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .panel-tag.live { background: var(--emerald-tint); color: var(--emerald); }
+  .panel-tag.alert { background: var(--rust-tint); color: var(--rust-deep); }
+
+  /* Grid spans */
+  .span-3 { grid-column: span 3; }
+  .span-4 { grid-column: span 4; }
+  .span-5 { grid-column: span 5; }
+  .span-6 { grid-column: span 6; }
+  .span-7 { grid-column: span 7; }
+  .span-8 { grid-column: span 8; }
+  .span-12 { grid-column: span 12; }
+
+  @media (max-width: 1200px) {
+    .span-8 { grid-column: span 12; }
+    .span-7 { grid-column: span 12; }
+    .span-5 { grid-column: span 12; }
+    .span-4 { grid-column: span 6; }
+    .span-3 { grid-column: span 6; }
+  }
+  @media (max-width: 700px) {
+    .span-4, .span-3, .span-6 { grid-column: span 12; }
+  }
+
+  /* ============== KPI CARDS ============== */
+  .kpi-card { padding: 18px 22px; }
+  .kpi-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .kpi-value {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 144;
+    font-weight: 500;
+    font-size: 38px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    margin-bottom: 6px;
+  }
+  .kpi-value .currency {
+    font-size: 18px;
+    color: var(--muted);
+    margin-right: 6px;
+    font-weight: 400;
+  }
+  .kpi-card.start .kpi-value { color: var(--emerald); }
+  .kpi-card.mid .kpi-value { color: var(--gold); }
+  .kpi-card.end .kpi-value { color: var(--rust); }
+  .kpi-card.markup .kpi-value { color: var(--ink); }
+  .kpi-sub {
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .kpi-trend {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .kpi-trend .arrow { color: var(--rust); }
+  .kpi-trend .arrow.down { color: var(--emerald); }
+
+  /* ============== WATERFALL CHART ============== */
+  .waterfall {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 4px;
+  }
+  .waterfall-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 110px;
+    align-items: center;
+    gap: 12px;
+    height: 30px;
+  }
+  .waterfall-label {
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: right;
+    font-weight: 500;
+    line-height: 1.15;
+  }
+  .waterfall-label .step-no {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--muted);
+    margin-right: 5px;
+  }
+  .waterfall-bar-zone {
+    height: 100%;
+    position: relative;
+    background: linear-gradient(to right, transparent 0%, transparent 100%);
+  }
+  .waterfall-bar-zone::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    height: 1px;
+    background: repeating-linear-gradient(to right, var(--line) 0 4px, transparent 4px 8px);
+  }
+  .waterfall-segment {
+    position: absolute;
+    top: 5px; bottom: 5px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    transition: all 0.4s ease;
+  }
+  .waterfall-segment .seg-bar {
+    height: 100%;
+    width: 100%;
+    border-radius: 2px;
+    position: relative;
+  }
+  .waterfall-segment.start .seg-bar { background: var(--emerald); }
+  .waterfall-segment.handling .seg-bar { background: var(--ink-soft); }
+  .waterfall-segment.transport .seg-bar { background: var(--ink-soft); }
+  .waterfall-segment.susut-pengeringan .seg-bar { background: var(--rust); }
+  .waterfall-segment.susut-pk .seg-bar { background: var(--rust-deep); }
+  .waterfall-segment.whitener .seg-bar { background: var(--indigo); }
+  .waterfall-segment.poles .seg-bar { background: var(--indigo-soft); }
+  .waterfall-segment.pabrik .seg-bar { background: var(--gold); }
+  .waterfall-segment.repack .seg-bar { background: var(--gold-soft); }
+  .waterfall-segment.distribusi .seg-bar { background: var(--rust); }
+  .waterfall-segment.margin .seg-bar { background: var(--rust-deep); }
+
+  .waterfall-segment.spike::after {
+    content: '';
+    position: absolute;
+    right: -3px;
+    top: -8px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 6px solid var(--rust-deep);
+  }
+
+  .waterfall-delta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: left;
+    line-height: 1.1;
+  }
+  .waterfall-delta .end-value {
+    font-size: 12px;
+  }
+  .waterfall-delta .delta {
+    color: var(--rust);
+    font-size: 10.5px;
+    display: block;
+    font-weight: 500;
+  }
+  .waterfall-delta.spike .delta {
+    color: var(--rust-deep);
+    font-weight: 700;
+  }
+  .waterfall-axis {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 180px 1fr 110px;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .waterfall-axis-tick {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+  }
+
+  .waterfall-callouts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .callout {
+    padding: 12px 14px;
+    background: var(--rust-tint);
+    border-radius: 4px;
+    border-left: 3px solid var(--rust-deep);
+  }
+  .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--rust-deep);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .callout-value {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .callout-text {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 800px) {
+    .waterfall-row { grid-template-columns: 110px 1fr 90px; gap: 8px; }
+    .waterfall-axis { grid-template-columns: 110px 1fr 90px; gap: 8px; }
+    .waterfall-label { font-size: 10.5px; }
+    .waterfall-callouts { grid-template-columns: 1fr; }
+  }
+
+  /* ============== INDONESIA MAP ============== */
+  .map-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .map-region {
+    cursor: pointer;
+    transition: all 0.18s;
+    stroke: var(--paper);
+    stroke-width: 0.6;
+    stroke-linejoin: round;
+  }
+  .map-region:hover { filter: brightness(0.92); }
+  .map-region.tier-low { fill: #5d8a6f; }
+  .map-region.tier-mid { fill: #c89030; }
+  .map-region.tier-high { fill: #a8472a; }
+  .map-region.active {
+    stroke: var(--ink);
+    stroke-width: 1.5;
+    filter: drop-shadow(0 0 4px rgba(0,0,0,0.15));
+  }
+  .map-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    fill: var(--ink);
+    pointer-events: none;
+    letter-spacing: 0.04em;
+  }
+  .map-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .map-legend-item {
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    font-size: 11.5px;
+  }
+  .legend-swatch {
+    width: 14px; height: 14px;
+    border-radius: 2px;
+  }
+  .legend-swatch.tier-low { background: #5d8a6f; }
+  .legend-swatch.tier-mid { background: #c89030; }
+  .legend-swatch.tier-high { background: #a8472a; }
+  .legend-text { color: var(--ink-soft); }
+  .legend-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    color: var(--ink);
+  }
+
+  .map-detail {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--cream-2);
+    border-radius: 4px;
+    border-left: 3px solid var(--rust);
+  }
+  .map-detail-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .map-detail-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .map-detail-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+  }
+  .map-detail-row {
+    display: flex; justify-content: space-between;
+  }
+  .map-detail-row .lbl { color: var(--muted); }
+  .map-detail-row .val { font-weight: 600; color: var(--ink); }
+  .map-detail-row .val.over { color: var(--rust); }
+  .map-detail-row .val.ok { color: var(--emerald); }
+
+  .wilayah-list-details {
+    margin-top: 12px;
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+  }
+  .wilayah-list-details summary {
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 4px 0;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .wilayah-list-details summary::before {
+    content: '▸';
+    font-size: 10px;
+    transition: transform 0.2s;
+  }
+  .wilayah-list-details[open] summary::before { transform: rotate(90deg); }
+  .wilayah-list-details summary:hover { color: var(--ink); }
+  .wilayah-list {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 11.5px;
+  }
+  .wilayah-list-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s;
+    align-items: center;
+  }
+  .wilayah-list-row:hover { background: var(--cream-2); }
+  .wilayah-list-row.active { background: var(--rust-tint); }
+  .wilayah-list-row .name {
+    color: var(--ink-soft);
+    line-height: 1.25;
+  }
+  .wilayah-list-row .name .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--rust);
+    margin-right: 5px;
+    font-weight: 700;
+  }
+  .wilayah-list-row .price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    text-align: right;
+  }
+
+  /* ============== FUNNEL ============== */
+  .funnel-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0;
+    margin-top: 8px;
+  }
+  .funnel-step {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: center;
+    gap: 12px;
+    height: 50px;
+  }
+  .funnel-step-info {
+    font-size: 11.5px;
+    line-height: 1.2;
+    text-align: right;
+  }
+  .funnel-step-info .stage-name {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .funnel-step-info .stage-yield {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .funnel-step-bar-wrap {
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .funnel-bar {
+    height: 38px;
+    background: var(--gold-soft);
+    border-radius: 2px;
+    transition: all 0.4s ease;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .funnel-bar.t1 { background: #f4a070; }
+  .funnel-bar.t2 { background: #e89060; }
+  .funnel-bar.t3 { background: #d68050; }
+  .funnel-bar.t4 { background: #c47040; }
+  .funnel-bar.t5 { background: var(--rust); color: var(--cream); }
+  .funnel-loss {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--rust);
+    margin-left: auto;
+    padding-right: 4px;
+    font-weight: 600;
+  }
+  .funnel-summary {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--rust-tint);
+    border-radius: 4px;
+    border-left: 3px solid var(--rust);
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+  .funnel-summary strong { color: var(--rust-deep); font-weight: 700; }
+  .funnel-summary .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* ============== COST DONUT (CSS conic) ============== */
+  .donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 8px;
+    flex: 1;
+  }
+  .donut {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .donut-center {
+    position: absolute;
+    inset: 24px;
+    background: var(--paper);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .donut-center .total {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .donut-center .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .donut-legend {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .donut-legend-item {
+    display: grid;
+    grid-template-columns: 10px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+  }
+  .donut-legend-item .swatch {
+    width: 10px; height: 10px; border-radius: 2px;
+  }
+  .donut-legend-item .lbl { color: var(--ink-soft); }
+  .donut-legend-item .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 11px;
+  }
+
+  /* ============== TREEMAP-LIKE SIDE PRODUCTS ============== */
+  .treemap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    flex: 1;
+    margin-top: 4px;
+    grid-template-rows: 1fr 1fr 1fr;
+    min-height: 220px;
+  }
+  .tm-block {
+    padding: 12px;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--cream);
+    overflow: hidden;
+  }
+  .tm-block.b1 { background: #5d8a6f; grid-column: span 1; grid-row: span 2; }
+  .tm-block.b2 { background: #6d9a7f; }
+  .tm-block.b3 { background: #4d7a5f; }
+  .tm-block.b4 { background: #7daa8f; }
+  .tm-block.b5 { background: #3d6a4f; }
+  .tm-name {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.1;
+  }
+  .tm-mass {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: rgba(244,237,224,0.7);
+    margin-top: 2px;
+  }
+  .tm-value {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 144;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1;
+    margin-top: 8px;
+  }
+  .tm-value-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: rgba(244,237,224,0.7);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+  .tm-empty {
+    background: var(--cream-2);
+    color: var(--muted);
+    padding: 12px;
+    border-radius: 3px;
+    font-style: italic;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* ============== COMPARISON BAR CHART ============== */
+  .comparison-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .comp-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+  .comp-cat {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink);
+    text-align: right;
+    line-height: 1.2;
+  }
+  .comp-cat .cat-sub {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .comp-bars {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+  }
+  .comp-bar-wrap {
+    position: relative;
+    height: 24px;
+    background: rgba(26,22,18,0.04);
+    border-radius: 2px;
+  }
+  .comp-bar {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 0;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    padding-right: 6px;
+    justify-content: flex-end;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--cream);
+  }
+  .comp-bar.medium { background: var(--emerald-soft); }
+  .comp-bar.premium { background: var(--rust); }
+  .comp-bar-label {
+    position: absolute;
+    left: 5px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .comp-bar-value-outside {
+    position: absolute;
+    right: -65px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  @media (max-width: 700px) {
+    .comp-row { grid-template-columns: 100px 1fr; }
+    .comp-cat { font-size: 11px; }
+  }
+
+  /* ============== DETAIL TABLE ============== */
+  .detail-table-wrap {
+    overflow-x: auto;
+    margin-top: 8px;
+  }
+  .detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    min-width: 720px;
+  }
+  .detail-table th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--cream-2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--line-strong);
+    white-space: nowrap;
+  }
+  .detail-table th.num { text-align: right; }
+  .detail-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .detail-table td.num {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+  .detail-table td.num.bold { font-weight: 700; color: var(--ink); }
+  .detail-table td.num.delta-up {
+    color: var(--rust);
+  }
+  .detail-table td.num.delta-up::before { content: '+'; }
+  .detail-table td.num.byprod {
+    color: var(--emerald);
+  }
+  .detail-table tr:hover td { background: rgba(168, 71, 42, 0.04); }
+  .detail-table .stage-cell {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 13.5px;
+  }
+  .detail-table .stage-cell .stage-no {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    font-size: 9.5px;
+    color: var(--rust);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    margin-right: 6px;
+  }
+  .detail-table tr.row-spike td { background: rgba(168, 71, 42, 0.06); }
+  .detail-table tr.row-spike td:first-child {
+    border-left: 3px solid var(--rust-deep);
+  }
+
+  /* ============== PDF REPLICA TABLE STYLING ============== */
+  .detail-table.pdf-replica {
+    font-size: 12.5px;
+    min-width: 740px;
+  }
+  .detail-table.pdf-replica th.num-col { text-align: center; width: 40px; }
+  .detail-table.pdf-replica td.num-cell {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 40px;
+    padding: 8px 6px;
+  }
+  .detail-table.pdf-replica td.item-cell {
+    padding: 8px 12px;
+    line-height: 1.35;
+  }
+  .detail-table.pdf-replica td.item-cell .item-note {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .detail-table.pdf-replica td.item-cell .item-spec {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--rust);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+  .detail-table.pdf-replica td.num {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .detail-table.pdf-replica td .dash { color: var(--line-strong); font-weight: 400; }
+  .detail-table.pdf-replica td .susut-pct {
+    color: var(--rust);
+    font-weight: 700;
+  }
+  .detail-table.pdf-replica td .byprod-pct {
+    color: var(--emerald);
+    font-weight: 700;
+  }
+  .detail-table.pdf-replica tr.stage-header td {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 12px 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    border-bottom: none;
+  }
+  .detail-table.pdf-replica tr.stage-header .stage-num {
+    display: inline-block;
+    background: var(--rust);
+    color: var(--cream);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-right: 10px;
+    letter-spacing: 0.08em;
+  }
+  .detail-table.pdf-replica tr.stage-header .stage-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 14.5px;
+  }
+  .detail-table.pdf-replica tr.row-bold td {
+    background: rgba(200, 144, 48, 0.08);
+    font-weight: 700;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .detail-table.pdf-replica tr.row-bold td.item-cell {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .detail-table.pdf-replica tr.row-bold td.num {
+    font-weight: 700;
+  }
+  .detail-table.pdf-replica tr.row-spike td {
+    background: rgba(168, 71, 42, 0.08);
+  }
+  .detail-table.pdf-replica tr.row-spike td:first-child {
+    border-left: 3px solid var(--rust-deep);
+  }
+  .detail-table.pdf-replica tr.row-byprod td {
+    background: rgba(93, 138, 111, 0.06);
+  }
+  .detail-table.pdf-replica tr.row-byprod td.item-cell::before {
+    content: '↓ side product · ';
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--emerald);
+    letter-spacing: 0.06em;
+  }
+  .detail-table.pdf-replica tr.row-final td {
+    background: var(--rust);
+    color: var(--cream);
+    font-weight: 700;
+    font-size: 13px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .detail-table.pdf-replica tr.row-final td.item-cell {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+  }
+  .detail-table.pdf-replica tr.row-final td .dash { color: rgba(244,237,224,0.4); }
+
+  /* ============== UNIFIED VISUAL WATERFALL · funnel-style thick bars ============== */
+  .uni-waterfall {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 4px;
+  }
+  .uni-stage-header {
+    display: grid;
+    grid-template-columns: 38px 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0 8px;
+    margin-top: 6px;
+  }
+  .uni-stage-header:first-child { margin-top: 0; padding-top: 4px; }
+  .uni-stage-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--rust);
+    color: var(--cream);
+    padding: 4px 9px;
+    border-radius: 3px;
+    letter-spacing: 0.12em;
+    text-align: center;
+  }
+  .uni-stage-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: 6px;
+  }
+
+  .uni-row {
+    display: grid;
+    grid-template-columns: 28px 220px 1fr 70px 50px 45px;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0;
+    transition: background 0.12s;
+  }
+  .uni-row:hover { background: rgba(168, 71, 42, 0.04); }
+  .uni-row .uni-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    font-weight: 500;
+  }
+  .uni-row .uni-label {
+    font-size: 12.5px;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .uni-row .uni-label .item-note {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 1px;
+  }
+  .uni-row .uni-label .item-spec {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5px;
+    color: var(--rust);
+    margin-top: 1px;
+    letter-spacing: 0.04em;
+  }
+
+  /* CHUNKY BAR ZONE — like funnel chart */
+  .uni-row .uni-bar-zone {
+    height: 36px;
+    position: relative;
+    background: rgba(26, 22, 18, 0.035);
+    border-radius: 3px;
+  }
+  .uni-row .uni-bar {
+    position: absolute;
+    top: 0; bottom: 0;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    justify-content: flex-end;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  /* Default cumulative bar: gold gradient like funnel */
+  .uni-row .uni-bar.cumulative {
+    left: 0;
+    background: linear-gradient(to right, #f5c976 0%, #e2a955 100%);
+    color: var(--ink);
+  }
+  /* Spike bars (susut): rust gradient — stands out */
+  .uni-row .uni-bar.cumulative.spike {
+    background: linear-gradient(to right, #d68050 0%, #a8472a 100%);
+    color: var(--cream);
+  }
+  /* Checkpoint bars: deeper gold/orange */
+  .uni-row .uni-bar.cumulative.checkpoint {
+    background: linear-gradient(to right, #e2a955 0%, #c89030 100%);
+    color: var(--ink);
+  }
+  /* Final retail price bar: dark ink */
+  .uni-row .uni-bar.cumulative.final {
+    background: linear-gradient(to right, #3a3128 0%, #1a1612 100%);
+    color: var(--gold-soft);
+    font-size: 14px;
+  }
+  /* Side product (byproduct) tag: emerald, anchored next to last cumulative */
+  .uni-row .uni-bar.byprod-tag {
+    background: var(--emerald);
+    color: var(--cream);
+    font-size: 10.5px;
+    padding: 0 10px;
+    justify-content: center;
+    height: 26px;
+    top: 5px;
+  }
+  /* Cost-only tag: gray, anchored next to last cumulative */
+  .uni-row .uni-bar.cost-only {
+    background: var(--ink-soft);
+    color: var(--cream);
+    font-size: 10.5px;
+    padding: 0 10px;
+    justify-content: center;
+    height: 26px;
+    top: 5px;
+  }
+
+  /* Bar value label inside bar */
+  .uni-row .uni-bar-val {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+  .uni-row .uni-bar-val .lbl-prefix {
+    font-weight: 500;
+    font-size: 10px;
+    opacity: 0.65;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+  }
+
+  /* Right metadata columns */
+  .uni-row .uni-biaya, .uni-row .uni-susut, .uni-row .uni-rdm {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: right;
+    color: var(--ink-soft);
+  }
+  .uni-row .uni-biaya.delta-pos { color: var(--rust); font-weight: 600; }
+  .uni-row .uni-biaya.byprod { color: var(--emerald); font-weight: 600; }
+  .uni-row .uni-susut { color: var(--rust); font-weight: 500; }
+  .uni-row .uni-susut.zero { color: var(--muted); }
+  .uni-row .uni-susut.byprod { color: var(--emerald); }
+  .uni-row .uni-rdm { color: var(--muted); }
+
+  /* Special row treatments */
+  .uni-row.is-base .uni-label { font-weight: 600; }
+  .uni-row.is-checkpoint .uni-label {
+    font-weight: 600;
+    color: var(--ink);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+  }
+  .uni-row.is-spike .uni-label { font-weight: 600; }
+  .uni-row.is-byprod .uni-label::before {
+    content: '↓ ';
+    color: var(--emerald);
+    font-weight: 700;
+  }
+  .uni-row.is-final {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .uni-row.is-final .uni-label {
+    color: var(--ink);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .uni-row.is-final .uni-bar-zone {
+    background: transparent;
+    height: 44px;
+  }
+  .uni-row.is-final .uni-bar.cumulative.final {
+    height: 44px;
+    top: 0;
+  }
+
+  .uni-dash {
+    color: var(--line-strong);
+    font-weight: 400;
+  }
+
+  .uni-row .uni-dash { color: var(--line-strong); }
+
+  .uni-axis {
+    margin-top: 14px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 28px 240px 1fr 80px 60px 50px;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .uni-axis-bar {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 2px;
+  }
+  .uni-axis .col-r { text-align: right; font-weight: 600; }
+
+  .uni-legend {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--cream-2);
+    border-radius: 4px;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+  }
+  .uni-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .uni-legend-item .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+  }
+  .uni-legend-item .swatch.cumulative { background: linear-gradient(to right, #f5c976 0%, #e2a955 100%); }
+  .uni-legend-item .swatch.checkpoint { background: linear-gradient(to right, #e2a955 0%, #c89030 100%); }
+  .uni-legend-item .swatch.spike { background: linear-gradient(to right, #d68050 0%, #a8472a 100%); }
+  .uni-legend-item .swatch.byprod { background: var(--emerald); }
+  .uni-legend-item .swatch.final { background: linear-gradient(to right, #3a3128 0%, #1a1612 100%); }
+
+  @media (max-width: 900px) {
+    .uni-row, .uni-axis { grid-template-columns: 22px 130px 1fr 60px 44px 36px; gap: 8px; }
+    .uni-row .uni-label { font-size: 11px; }
+    .uni-row .uni-bar { font-size: 10.5px; padding: 0 8px; }
+    .uni-row .uni-bar-zone { height: 26px; }
+  }
+
+  /* ============== FOOTER ============== */
+  footer {
+    margin-top: 32px;
+    padding: 24px 0 32px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 11.5px;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+  footer .tagline {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  footer .tagline em { color: var(--rust); }
+  footer .legal {
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.7;
+  }
+  footer .links {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.7;
+  }
+  footer .links span { color: var(--ink); font-weight: 500; }
+  @media (max-width: 700px) {
+    footer { grid-template-columns: 1fr; }
+    footer .links { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============== HEADER ============== -->
+<header class="dash-header">
+  <div class="wrap">
+    <div class="header-row">
+      <div class="brand">
+        <div class="brand-mark"><span>R</span></div>
+        <div class="brand-text">
+          <div class="org">@aliftowew · Tenaga Ahli Kemenko Pangan RI</div>
+          <div class="name">Rice <em>Journey</em> · Dashboard</div>
+        </div>
+      </div>
+      <div></div>
+      <div class="filters">
+        <div class="filter-block">
+          <span class="filter-label">Wilayah</span>
+          <select id="wilayahSelect"></select>
+        </div>
+        <div class="filter-block">
+          <span class="filter-label">Grade</span>
+          <div class="grade-toggle">
+            <button data-grade="medium" class="active">Medium</button>
+            <button data-grade="premium">Premium</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============== TITLE ============== -->
+  <div class="page-title-row">
+    <div>
+      <div class="eyebrow">Modul 03 <span>/ analitik distribusi beras</span></div>
+      <h1>Dari <em>Rp 6.500</em> di petani hingga <em id="titleFinal">Rp 13.544</em> di pengecer.</h1>
+    </div>
+    <div class="page-meta">
+      <strong>Sumber:</strong> Bapanas, Update 12 Aug 2024<br>
+      <strong>HET:</strong> KepKa Bapanas 299/2025<br>
+      <strong>Status:</strong> 100% data resmi
+    </div>
+  </div>
+
+  <!-- ============== DASHBOARD GRID ============== -->
+  <div class="dashboard">
+
+    <!-- ──────── 01 · RINGKASAN ──────── -->
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Ringkasan</span>
+      <span class="section-sub">harga di tiap titik · rendemen total</span>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="panel kpi-card start span-3">
+      <div class="kpi-label">Harga di Petani <span class="info-tip" data-tip="<strong>GKP · Gabah Kering Panen</strong>Gabah baru dipanen dengan kadar air ±25%. Inilah harga yang diterima petani dari penebas atau penggilingan. Belum melalui proses pengeringan apapun.">?</span></div>
+      <div class="kpi-value"><span class="currency">Rp</span><span id="kpiStart">6.500</span></div>
+      <div class="kpi-sub">/kg GKP · gabah kering panen</div>
+      <div class="kpi-trend">100% massa awal</div>
+    </div>
+
+    <div class="panel kpi-card mid span-3">
+      <div class="kpi-label">Harga di Pabrik <span class="info-tip" data-tip="<strong>Harga Keluar Pabrik</strong>Beras yang sudah jadi dan dikemas dalam karung 50kg, siap dikirim ke distributor. Sudah termasuk semua biaya proses, overhead, dan margin penggilingan.">?</span></div>
+      <div class="kpi-value"><span class="currency">Rp</span><span id="kpiPabrik">12.927</span></div>
+      <div class="kpi-sub">/kg beras kemasan 50kg · siap distribusi</div>
+      <div class="kpi-trend"><span class="arrow">▲</span> <span id="kpiPabrikDelta">+99% dari GKP</span></div>
+    </div>
+
+    <div class="panel kpi-card end span-3">
+      <div class="kpi-label">Harga di Pengecer <span class="info-tip" data-tip="<strong>Harga di Rak Pengecer</strong>Harga akhir yang dilihat konsumen. Termasuk biaya distribusi, kemasan ritel (untuk premium), dan margin pengecer. Inilah angka yang dibandingkan dengan HET.">?</span></div>
+      <div class="kpi-value"><span class="currency">Rp</span><span id="kpiRetail">13.544</span></div>
+      <div class="kpi-sub" id="kpiRetailSub">/kg di pasar tradisional · general trade</div>
+      <div class="kpi-trend"><span class="arrow">▲</span> <span id="kpiRetailDelta">+108% dari GKP</span></div>
+    </div>
+
+    <div class="panel kpi-card markup span-3">
+      <div class="kpi-label">Yang Tersisa <span class="info-tip tip-right" data-tip="<strong>Rendemen Total</strong>Persentase massa yang tersisa sebagai beras siap jual, dari setiap 1 kg gabah kering panen. 43% sisanya hilang sebagai uap air saat pengeringan, sekam saat pecah kulit, dan side product seperti katul, menir, beras patah.">?</span></div>
+      <div class="kpi-value"><span id="kpiYield">57</span><span style="font-size:18px;color:var(--muted);">%</span></div>
+      <div class="kpi-sub" id="kpiYieldSub">574 g beras dari 1 kg GKP awal</div>
+      <div class="kpi-trend"><span class="arrow down">▼</span> <span id="kpiLossText">-43% massa</span></div>
+    </div>
+
+    <!-- ──────── 02 · ALUR HARGA ──────── -->
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Alur <em>Harga</em></span>
+      <span class="section-sub">visual chart + tabel data dalam satu grafik · 41 line items dari PDF Bapanas</span>
+    </div>
+
+    <!-- UNIFIED VISUAL WATERFALL: chart + table in one panel -->
+    <div class="panel span-12">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title"><em>Dimana naiknya?</em> Setiap line item, dari Rp 6.500 ke harga pengecer. <span class="info-tip" data-tip="<strong>Unified Waterfall</strong>Setiap baris = 1 line item dari PDF Bapanas. Bar visual = delta harga (kenaikan/kontribusi). Hijau = side product offset. Rust gelap = spike susut. Garis putus = checkpoint harga. Hitam tebal = harga final pengecer.">?</span></div>
+          <div class="panel-sub">struktur sama dengan Perhitungan Bapanas Update 12 Aug 2024 · klik kanan-bawah untuk simulasi What-If</div>
+        </div>
+        <span class="panel-tag">41 line items</span>
+      </div>
+
+      <div id="uniWaterfall" class="uni-waterfall"></div>
+
+      <div class="uni-legend">
+        <div class="uni-legend-item"><span class="swatch cumulative"></span>Harga kumulatif</div>
+        <div class="uni-legend-item"><span class="swatch checkpoint"></span>Checkpoint harga</div>
+        <div class="uni-legend-item"><span class="swatch spike"></span>Setelah spike susut</div>
+        <div class="uni-legend-item"><span class="swatch byprod"></span>Side product offset</div>
+        <div class="uni-legend-item"><span class="swatch final"></span>Harga pengecer final</div>
+      </div>
+    </div>
+
+    <!-- ──────── 03 · ALUR MASSA ──────── -->
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Alur <em>Massa</em></span>
+      <span class="section-sub">dari 1.000 kg gabah → berapa kg beras final · kemana sisanya?</span>
+    </div>
+
+    <!-- FUNNEL: rendemen cascade -->
+    <div class="panel span-6">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Rendemen <em>massa cascade</em>. <span class="info-tip" data-tip="<strong>Rendemen</strong>Persentase massa yang tersisa setelah suatu proses. Misal: 1.000 kg GKP yang dikeringkan menghasilkan 840 kg GKG (rendemen 84%, susut 16% sebagai uap air).">?</span></div>
+          <div class="panel-sub">dari 1.000 kg GKP → ? kg beras final</div>
+        </div>
+      </div>
+      <div class="funnel-container" id="funnelContainer"></div>
+      <div class="funnel-summary" id="funnelSummary"></div>
+    </div>
+
+    <!-- SIDE PRODUCT TREEMAP -->
+    <div class="panel span-6 accent-emerald">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Side <em>products</em>. <span class="info-tip" data-tip="<strong>Side Products / Byproduct</strong>Produk sampingan yang dihasilkan saat proses penggilingan: katul (bekatul untuk pakan), beras menir (pecahan halus), beras patah, beras rijek. Ini adalah aset, bukan limbah — punya nilai jual ke industri pakan/olahan.">?</span></div>
+          <div class="panel-sub">nilai per 1.000 kg GKP awal</div>
+        </div>
+        <span class="panel-tag" id="sideProductTag">Rp 237k</span>
+      </div>
+      <div class="treemap-grid" id="sideProductTreemap"></div>
+    </div>
+
+    <!-- ──────── 04 · KOMPARASI GRADE ──────── -->
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Komparasi <em>Grade</em></span>
+      <span class="section-sub">premium vs medium · gap Rp 1.667/kg · 70% dari distribusi & retail</span>
+    </div>
+
+    <!-- PREMIUM vs MEDIUM COMPARISON -->
+    <div class="panel span-12">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Premium <em>vs</em> Medium · per kategori biaya. <span class="info-tip" data-tip="<strong>Spesifikasi Beras</strong>Premium: Brk Maks 15%, Ka 14%, Ds 100% (zero pecah, sosoh sempurna). Medium: Brk 18-25%, Ka 14%, Ds 95%. Brk = pecah, Ka = kadar air, Ds = derajat sosoh.">?</span></div>
+          <div class="panel-sub">gap total Rp 1.667/kg · 70% dari distribusi & retail, bukan kompleksitas milling</div>
+        </div>
+        <span class="panel-tag">Rp 1.667 gap</span>
+      </div>
+      <div class="comparison-grid" id="comparisonGrid"></div>
+    </div>
+
+    <!-- ──────── 05 · DISTRIBUSI HET PER ZONA ──────── -->
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">HET <em>per Zona</em></span>
+      <span class="section-sub">8 wilayah regulasi · sumber: KepKa Bapanas 299 Tahun 2025 (PDF page 1)</span>
+    </div>
+
+    <!-- INDONESIA MAP (full width section) -->
+    <div class="panel span-8">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Peta <em>Indonesia</em> · 8 zona HET. <span class="info-tip" data-tip="<strong>HET · Harga Eceran Tertinggi</strong>Batas atas harga jual beras di tingkat pengecer, ditetapkan pemerintah. Berlaku 8 zona yang berbeda berdasarkan biaya logistik dan jarak dari sentra produksi. Sumber: KepKa Bapanas 299/2025 (PDF page 1).">?</span></div>
+          <div class="panel-sub">geographic outline · Natural Earth · klik untuk pilih zona</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 1000 380" class="map-svg" id="indonesiaMap">
+        <!-- Geographic paths from Natural Earth 50m, projected -->
+        <path class="map-region tier-mid" data-zona="sumatera-lain" d="M 32.1,16.7 L 39.6,15.8 L 44.8,16.7 L 52.7,16.6 L 54.8,17.3 L 58.2,20.8 L 63.8,26.5 L 64.9,29.6 L 70.4,36.4 L 71.1,41.4 L 78.6,45.0 L 79.7,47.0 L 83.2,49.7 L 97.2,58.4 L 105.5,65.4 L 108.0,69.6 L 114.1,76.7 L 116.1,79.6 L 118.8,82.7 L 122.2,84.2 L 126.6,88.0 L 125.1,83.8 L 125.3,81.6 L 127.7,80.5 L 133.8,84.6 L 136.7,89.3 L 139.3,93.5 L 143.8,94.2 L 151.0,99.0 L 153.9,102.9 L 155.4,108.2 L 158.9,112.0 L 162.7,114.0 L 170.9,115.9 L 173.5,119.6 L 167.5,123.8 L 167.3,125.0 L 172.1,123.1 L 178.0,119.5 L 180.9,119.3 L 184.5,121.9 L 188.0,126.5 L 187.3,130.7 L 181.2,134.5 L 181.6,136.2 L 182.7,139.4 L 181.3,141.9 L 183.5,146.7 L 187.6,149.5 L 194.9,152.5 L 199.1,153.2 L 201.7,153.6 L 203.1,159.9 L 204.7,167.2 L 205.8,172.0 L 210.6,174.6 L 211.7,177.4 L 210.5,179.8 L 207.5,183.0 L 207.6,186.6 L 209.3,186.1 L 213.3,182.2 L 215.6,181.5 L 223.6,182.0 L 227.6,184.4 L 237.5,197.7 L 237.8,200.2 L 234.4,204.3 L 233.2,208.8 L 234.3,212.4 L 235.0,214.6 L 232.9,220.7 L 234.2,231.5 L 234.1,239.1 L 232.3,254.4 L 229.6,256.6 L 227.5,255.4 L 226.3,253.5 L 221.6,251.2 L 216.8,255.0 L 213.6,253.7 L 206.9,251.3 L 208.1,256.6 L 207.1,258.6 L 203.9,256.3 L 198.8,250.6 L 195.0,247.2 L 188.6,239.6 L 179.2,233.7 L 175.0,230.1 L 162.1,220.4 L 154.6,210.1 L 146.6,203.6 L 141.4,199.1 L 136.9,191.3 L 133.5,188.1 L 127.8,181.2 L 125.8,176.8 L 118.0,158.5 L 114.2,148.3 L 109.4,142.3 L 106.1,139.0 L 101.6,131.0 L 98.9,128.0 L 91.1,124.5 L 88.4,120.3 L 84.6,107.9 L 79.7,93.3 L 76.6,89.0 L 64.6,81.7 L 60.1,80.7 L 57.3,76.1 L 56.3,69.8 L 51.4,65.7 L 48.4,61.0 L 42.3,52.7 L 38.7,49.8 L 31.0,47.4 L 26.5,41.8 L 12.5,29.1 L 9.3,24.6 L 4.5,15.6 L 5.3,12.8 L 4.8,10.5 L 6.0,8.9 L 11.1,8.1 L 15.9,9.1 L 22.1,14.1 L 26.9,15.9 L 32.1,16.7 Z M 284.0,195.4 L 283.7,197.7 L 283.2,198.5 L 281.3,199.7 L 280.8,200.3 L 279.1,200.2 L 278.9,199.0 L 278.3,198.2 L 276.5,197.3 L 276.1,197.5 L 275.8,198.9 L 272.3,199.9 L 271.3,200.0 L 271.7,198.1 L 270.9,196.7 L 270.8,194.9 L 270.7,194.1 L 270.2,193.7 L 271.0,192.5 L 271.0,191.1 L 271.9,189.6 L 272.4,186.0 L 276.1,185.2 L 276.8,185.9 L 281.2,186.7 L 284.2,188.9 L 285.8,191.8 L 284.0,195.4 Z M 53.3,98.5 L 58.1,104.6 L 59.9,105.4 L 62.5,108.2 L 63.1,109.1 L 62.4,111.1 L 61.8,116.6 L 60.7,118.0 L 57.7,117.3 L 57.7,116.4 L 56.0,112.2 L 52.9,109.8 L 51.7,109.7 L 50.9,107.4 L 49.4,104.5 L 44.7,99.3 L 48.3,99.4 L 50.0,98.1 L 50.4,97.1 L 50.7,96.8 L 53.3,98.5 Z M 89.6,168.9 L 87.6,169.0 L 83.3,166.4 L 82.3,165.3 L 82.1,163.7 L 78.0,157.7 L 77.5,156.3 L 79.0,151.3 L 83.2,150.2 L 84.6,151.0 L 85.1,153.2 L 87.4,157.2 L 88.2,159.4 L 88.8,160.4 L 89.0,161.1 L 88.9,161.6 L 90.6,164.2 L 91.7,165.6 L 91.9,168.0 L 89.6,168.9 Z M 31.5,79.0 L 30.1,79.2 L 28.9,78.8 L 27.8,77.5 L 22.0,73.9 L 20.2,73.9 L 19.0,72.9 L 17.4,72.6 L 15.8,70.2 L 15.4,68.9 L 16.6,68.3 L 17.3,67.0 L 19.3,67.5 L 21.4,69.9 L 23.7,70.7 L 24.3,71.2 L 25.4,72.5 L 30.5,75.7 L 31.0,76.7 L 31.4,77.8 L 31.5,79.0 Z M 172.6,114.1 L 172.3,114.9 L 171.4,114.3 L 167.2,113.3 L 165.8,113.3 L 162.2,112.2 L 161.1,111.7 L 160.3,111.0 L 160.6,109.7 L 161.1,108.9 L 161.4,106.6 L 162.3,105.7 L 164.1,107.4 L 166.1,108.8 L 167.3,109.5 L 170.9,110.9 L 172.1,111.6 L 172.6,114.1 Z M 144.2,85.1 L 145.5,86.9 L 145.7,88.1 L 144.8,89.4 L 144.5,91.4 L 142.0,93.0 L 139.8,92.7 L 139.1,92.1 L 137.7,89.0 L 137.9,86.4 L 138.7,85.4 L 140.7,85.5 L 142.8,84.1 L 144.2,85.1 Z M 206.2,103.9 L 206.2,105.5 L 207.5,106.3 L 207.8,107.5 L 207.6,109.4 L 206.5,111.7 L 205.9,112.2 L 204.4,111.8 L 203.9,111.0 L 203.7,110.4 L 203.9,110.0 L 202.8,109.5 L 203.5,108.7 L 203.0,107.5 L 199.9,108.2 L 199.0,108.3 L 198.8,106.9 L 199.0,106.3 L 201.4,104.6 L 202.8,104.3 L 204.3,104.7 L 206.2,103.9 Z M 116.7,199.4 L 117.5,202.6 L 115.0,200.4 L 115.0,198.9 L 114.6,197.9 L 113.1,196.7 L 111.9,195.1 L 111.4,191.5 L 111.8,190.8 L 112.8,190.7 L 117.3,195.5 L 117.6,196.3 L 117.5,198.0 L 116.9,198.5 L 116.7,199.4 Z M 210.3,134.1 L 210.9,134.5 L 211.7,133.3 L 213.1,134.9 L 214.0,135.7 L 215.1,136.4 L 214.0,136.5 L 213.5,137.2 L 213.2,137.3 L 208.6,134.8 L 205.7,135.6 L 203.8,134.9 L 203.1,134.4 L 204.2,133.0 L 205.2,129.9 L 207.2,130.7 L 207.7,131.7 L 207.6,131.9 L 208.9,132.5 L 210.3,134.1 Z M 74.4,141.8 L 73.1,142.8 L 71.1,141.8 L 71.8,140.5 L 72.1,138.5 L 73.3,137.0 L 73.7,135.2 L 71.4,130.3 L 72.5,130.1 L 73.5,130.6 L 74.9,133.9 L 76.2,135.9 L 75.7,138.5 L 74.4,141.8 Z M 159.7,108.8 L 158.7,109.5 L 157.5,108.4 L 156.5,106.9 L 156.1,105.4 L 155.6,102.8 L 155.4,101.0 L 156.1,100.0 L 156.5,100.0 L 158.2,101.1 L 159.4,102.9 L 160.1,103.5 L 160.2,105.2 L 159.8,107.1 L 159.7,108.8 Z M 161.1,98.6 L 161.3,101.4 L 159.7,100.6 L 158.4,99.5 L 156.5,98.7 L 154.0,98.5 L 152.2,97.7 L 151.0,96.5 L 151.0,95.9 L 151.0,95.4 L 151.4,95.0 L 160.6,97.5 L 161.1,98.6 Z M 203.8,137.5 L 205.8,139.7 L 206.2,140.4 L 205.2,141.6 L 204.5,143.2 L 204.0,143.6 L 202.4,143.0 L 201.4,144.6 L 200.7,142.0 L 199.1,140.3 L 200.0,138.7 L 200.4,138.5 L 200.9,138.6 L 201.4,139.0 L 203.8,137.5 Z M 175.7,111.4 L 175.0,112.0 L 173.9,111.9 L 172.8,111.1 L 171.2,109.8 L 169.6,108.6 L 167.5,107.9 L 166.1,107.7 L 165.7,107.4 L 166.1,105.1 L 167.5,105.0 L 172.0,107.1 L 173.5,108.3 L 175.7,111.4 Z M 111.9,189.8 L 110.4,191.6 L 107.8,191.5 L 107.4,190.4 L 107.4,187.8 L 106.8,187.0 L 106.8,186.6 L 107.3,185.1 L 107.8,184.8 L 111.9,188.5 L 111.9,189.8 Z M 104.1,181.2 L 104.3,181.7 L 100.8,179.8 L 99.1,179.3 L 97.6,177.2 L 98.0,176.2 L 98.1,174.8 L 98.3,174.3 L 99.4,174.1 L 100.8,175.1 L 101.8,177.6 L 103.6,179.9 L 104.1,181.2 Z M 187.9,137.8 L 185.1,138.6 L 181.9,138.0 L 182.3,136.8 L 183.9,135.2 L 185.2,135.3 L 187.6,136.3 L 188.5,137.2 L 187.9,137.8 Z M 194.1,104.6 L 195.5,105.6 L 196.6,105.0 L 196.5,105.8 L 196.3,106.6 L 194.9,108.8 L 192.8,108.3 L 192.2,107.6 L 192.1,107.0 L 192.4,106.7 L 192.6,105.6 L 193.5,105.6 L 194.1,104.6 Z M 178.1,118.5 L 175.7,118.7 L 175.0,118.4 L 175.3,116.3 L 176.0,115.1 L 177.1,115.1 L 178.4,117.0 L 178.1,118.5 Z M 181.7,115.9 L 181.3,116.1 L 179.5,113.4 L 179.9,111.8 L 180.4,111.4 L 181.4,112.4 L 182.2,113.4 L 182.8,114.6 L 181.7,115.9 Z M 231.4,68.1 L 230.5,68.2 L 230.2,67.5 L 230.3,66.5 L 230.2,65.5 L 229.9,64.9 L 229.9,63.8 L 230.8,64.3 L 231.4,64.9 L 232.2,65.2 L 232.7,65.5 L 233.0,65.7 L 232.5,67.2 L 231.4,68.1 Z M 50.2,85.2 L 50.1,85.7 L 47.8,83.4 L 45.4,82.1 L 46.4,81.8 L 48.5,82.2 L 49.3,82.5 L 50.1,83.6 L 50.2,85.2 Z M 7.8,4.1 L 7.3,4.7 L 6.1,4.4 L 4.7,2.4 L 5.2,2.0 L 6.1,2.2 L 7.7,2.7 L 7.9,3.4 L 7.8,4.1 Z" />
+        <path class="map-region tier-low" data-zona="jawa-lampung-sumsel" d="M 266.1,260.7 L 268.3,263.2 L 270.2,264.5 L 272.4,265.3 L 274.8,265.3 L 277.1,265.6 L 279.8,266.6 L 282.5,267.0 L 283.8,266.8 L 285.1,266.4 L 285.9,266.3 L 286.7,266.8 L 288.6,268.9 L 290.7,270.8 L 291.2,271.8 L 292.6,276.4 L 294.1,277.7 L 296.4,278.1 L 298.9,278.1 L 301.5,278.3 L 307.4,279.4 L 309.7,279.2 L 311.8,278.2 L 313.7,278.9 L 318.7,280.2 L 321.2,280.5 L 324.0,280.1 L 326.9,280.0 L 328.2,280.4 L 329.5,280.9 L 330.6,281.2 L 331.7,281.1 L 333.7,280.0 L 335.1,278.1 L 336.2,275.6 L 337.1,273.0 L 337.6,271.8 L 338.4,270.8 L 339.5,270.2 L 340.6,269.8 L 343.5,270.0 L 344.1,270.7 L 347.4,275.1 L 348.0,275.5 L 351.5,275.8 L 352.4,275.6 L 354.5,274.7 L 355.7,274.6 L 357.9,275.7 L 358.9,276.7 L 359.9,277.4 L 365.3,278.1 L 367.5,280.0 L 368.5,280.2 L 372.3,280.0 L 374.9,280.2 L 377.2,280.7 L 378.2,283.4 L 379.0,286.1 L 379.6,287.1 L 381.7,288.0 L 382.7,288.9 L 382.4,291.6 L 382.7,294.3 L 387.4,296.5 L 392.4,297.9 L 397.8,298.0 L 403.2,297.6 L 405.9,297.0 L 409.4,296.0 L 410.1,296.0 L 416.8,299.0 L 417.4,299.5 L 418.1,301.8 L 418.1,304.1 L 416.9,309.7 L 416.8,311.3 L 416.9,312.8 L 418.3,316.2 L 419.0,317.1 L 421.4,318.9 L 421.5,319.8 L 421.2,320.7 L 418.4,320.1 L 416.8,319.3 L 415.9,318.1 L 414.6,317.4 L 412.0,317.6 L 407.3,316.3 L 402.0,314.4 L 392.5,310.2 L 390.0,310.3 L 387.5,310.8 L 384.9,311.9 L 382.2,312.6 L 380.2,312.9 L 378.2,312.7 L 373.2,311.7 L 368.0,311.0 L 355.0,310.6 L 351.4,309.7 L 345.3,309.2 L 340.4,308.4 L 335.6,307.3 L 323.4,301.6 L 319.4,300.3 L 307.1,297.6 L 305.3,297.4 L 300.8,297.6 L 298.0,296.8 L 295.5,296.8 L 291.9,297.6 L 290.7,298.3 L 289.3,299.6 L 286.8,299.5 L 284.3,299.3 L 277.8,298.0 L 275.4,297.2 L 273.1,296.1 L 270.9,294.6 L 269.8,294.1 L 264.2,292.5 L 259.6,292.0 L 250.1,291.3 L 248.0,290.9 L 246.3,290.3 L 245.4,289.0 L 245.5,287.5 L 246.2,286.1 L 247.1,284.8 L 247.7,283.5 L 240.8,280.7 L 235.3,279.2 L 233.0,278.9 L 230.6,278.9 L 228.0,279.2 L 225.4,279.1 L 224.1,278.7 L 222.8,278.5 L 221.6,278.8 L 220.6,278.7 L 220.3,277.5 L 220.9,276.4 L 222.3,275.2 L 223.0,275.0 L 223.3,276.9 L 223.7,277.2 L 225.0,277.7 L 225.4,277.6 L 227.5,275.1 L 228.1,274.0 L 229.2,270.8 L 230.2,271.4 L 231.3,271.0 L 231.9,270.5 L 233.7,263.1 L 235.2,260.9 L 237.2,259.2 L 238.1,258.7 L 240.1,259.8 L 244.1,260.2 L 246.4,261.0 L 248.8,261.0 L 251.1,261.4 L 254.3,262.7 L 255.5,262.6 L 256.6,262.2 L 258.3,260.7 L 259.0,258.5 L 261.5,259.6 L 265.2,260.1 L 266.1,260.7 Z M 237.5,166.5 L 238.3,168.0 L 239.3,169.4 L 240.1,170.8 L 241.1,177.8 L 244.4,183.8 L 254.2,186.2 L 252.5,187.1 L 251.8,188.0 L 251.1,189.0 L 249.7,193.1 L 249.8,194.1 L 250.7,195.4 L 250.9,197.0 L 249.7,197.0 L 248.4,196.6 L 247.2,196.1 L 246.2,195.3 L 245.1,194.7 L 243.9,194.3 L 241.9,193.1 L 239.3,192.3 L 236.5,191.6 L 235.2,189.9 L 234.6,187.7 L 235.3,184.4 L 234.6,183.5 L 233.6,182.7 L 232.4,180.4 L 231.9,177.7 L 230.2,176.6 L 227.9,176.0 L 226.9,175.4 L 222.4,176.4 L 221.3,176.2 L 220.4,175.4 L 217.9,174.6 L 218.0,173.1 L 219.2,171.9 L 221.9,170.7 L 223.1,169.7 L 223.3,168.3 L 222.9,167.3 L 223.1,166.3 L 224.0,165.3 L 225.0,164.5 L 227.6,163.4 L 228.8,165.3 L 229.4,166.8 L 230.2,167.9 L 231.2,166.3 L 230.5,163.6 L 232.6,163.0 L 234.7,163.0 L 236.1,163.7 L 237.1,164.9 L 237.5,166.5 Z M 405.3,284.6 L 404.8,284.9 L 401.2,284.7 L 398.9,286.5 L 397.2,287.0 L 391.3,287.0 L 390.7,286.8 L 390.1,286.8 L 389.8,287.2 L 387.9,286.9 L 382.0,285.3 L 381.2,283.9 L 382.1,282.3 L 384.2,280.1 L 388.6,279.7 L 408.1,279.5 L 410.2,281.4 L 410.4,282.0 L 406.1,283.4 L 405.3,284.6 Z M 158.5,249.2 L 156.7,249.4 L 153.4,246.7 L 152.9,245.8 L 153.8,245.1 L 154.8,245.1 L 158.5,246.8 L 159.2,247.7 L 158.5,249.2 Z M 438.2,281.7 L 436.5,282.0 L 434.9,281.2 L 434.9,280.2 L 435.2,279.3 L 437.7,278.8 L 439.0,278.8 L 440.4,279.5 L 441.4,280.2 L 441.8,280.9 L 439.2,281.0 L 438.2,281.7 Z M 255.6,195.6 L 255.2,196.0 L 254.1,195.8 L 253.2,195.1 L 252.7,194.6 L 252.5,194.0 L 253.7,193.2 L 256.2,194.0 L 255.6,195.6 Z M 220.5,274.5 L 219.2,274.9 L 218.2,274.5 L 217.7,273.9 L 219.2,272.4 L 219.9,272.0 L 220.6,271.9 L 221.0,272.8 L 220.5,274.5 Z M 381.1,256.5 L 380.6,257.2 L 378.6,257.2 L 378.2,256.3 L 379.5,254.7 L 380.4,254.6 L 381.2,255.2 L 381.1,256.5 Z" />
+        <path class="map-region tier-mid" data-zona="kalimantan" d="M 314.6,86.2 L 313.4,91.1 L 316.9,97.2 L 321.4,101.2 L 325.1,104.5 L 332.5,111.1 L 342.7,108.2 L 350.2,107.6 L 357.1,108.1 L 361.5,108.3 L 368.4,103.3 L 371.0,98.2 L 385.9,96.3 L 386.9,98.6 L 389.8,99.7 L 398.2,101.9 L 403.4,101.8 L 408.6,98.7 L 416.9,97.7 L 420.8,97.4 L 423.3,90.8 L 425.8,89.1 L 426.1,86.4 L 425.1,82.2 L 429.4,79.2 L 433.9,75.5 L 431.8,73.1 L 432.1,70.4 L 432.6,67.4 L 436.8,65.3 L 440.7,62.3 L 441.1,57.7 L 442.4,54.2 L 442.4,44.7 L 444.7,39.2 L 448.6,35.9 L 454.5,35.7 L 459.6,36.3 L 463.5,35.6 L 466.6,35.7 L 479.1,36.9 L 485.5,39.7 L 483.1,41.8 L 486.9,46.1 L 489.5,49.2 L 486.7,51.3 L 483.8,50.7 L 476.8,51.3 L 476.7,52.3 L 480.1,59.9 L 484.0,62.9 L 486.3,65.0 L 486.8,67.0 L 486.9,68.9 L 490.0,70.6 L 495.3,78.7 L 495.6,82.2 L 492.1,85.5 L 491.7,87.5 L 498.0,94.6 L 513.0,106.5 L 513.8,111.0 L 501.3,111.9 L 494.9,107.7 L 494.2,109.4 L 491.5,113.2 L 485.0,122.9 L 483.1,137.3 L 485.5,146.1 L 480.8,149.1 L 474.7,154.4 L 469.9,156.7 L 467.5,153.0 L 467.9,156.5 L 467.0,160.2 L 463.3,164.0 L 458.8,167.5 L 459.2,168.9 L 461.3,172.0 L 459.6,177.2 L 463.7,180.2 L 461.3,185.4 L 458.4,185.7 L 459.6,189.1 L 457.9,194.5 L 454.9,195.1 L 456.0,198.7 L 452.8,203.0 L 450.7,208.3 L 422.6,220.4 L 420.1,206.2 L 417.1,205.7 L 415.1,203.4 L 413.6,203.3 L 410.9,201.6 L 404.2,205.3 L 400.8,202.6 L 399.2,199.3 L 395.0,200.3 L 386.5,199.5 L 375.2,203.5 L 364.6,206.9 L 361.8,207.0 L 361.8,196.7 L 359.1,193.0 L 354.7,194.8 L 345.1,196.7 L 340.4,195.3 L 340.0,194.1 L 336.9,195.5 L 330.1,194.3 L 327.6,193.8 L 324.7,173.7 L 321.8,168.1 L 323.0,160.7 L 319.9,154.2 L 310.8,149.2 L 306.7,147.8 L 309.0,144.8 L 304.6,141.0 L 303.7,136.0 L 305.3,130.5 L 305.8,128.7 L 302.7,124.8 L 299.1,113.0 L 301.8,104.1 L 303.2,103.0 L 302.2,99.1 L 307.0,93.3 L 314.6,86.2 Z M 458.2,214.3 L 453.6,218.3 L 452.9,217.3 L 453.3,213.2 L 452.0,210.6 L 452.1,208.7 L 453.0,205.4 L 454.1,202.8 L 456.8,201.1 L 457.4,200.9 L 457.2,204.0 L 457.8,205.2 L 457.9,206.2 L 457.7,207.1 L 458.2,211.0 L 458.5,212.0 L 457.9,213.2 L 458.2,214.3 Z M 286.4,50.2 L 283.4,51.0 L 281.7,49.8 L 283.6,48.5 L 284.2,48.4 L 284.7,48.1 L 284.8,47.5 L 281.5,46.6 L 280.6,45.8 L 279.6,43.8 L 279.6,42.5 L 283.9,39.1 L 284.9,38.7 L 285.1,40.1 L 288.0,43.7 L 288.1,46.1 L 288.1,47.0 L 286.4,50.2 Z M 316.3,155.9 L 312.1,158.1 L 311.1,158.0 L 310.3,157.2 L 310.8,153.0 L 311.3,151.7 L 314.3,151.5 L 316.1,152.2 L 317.0,152.9 L 317.4,154.3 L 317.3,155.2 L 316.3,155.9 Z M 487.0,39.8 L 489.1,39.8 L 492.2,39.4 L 492.8,41.5 L 493.0,42.3 L 489.0,43.3 L 486.6,40.8 L 487.0,39.8 Z M 487.3,59.1 L 487.0,59.8 L 485.2,58.0 L 484.6,56.8 L 484.9,55.7 L 486.8,55.7 L 487.7,56.3 L 487.3,59.1 Z M 300.1,165.4 L 297.6,166.4 L 296.8,164.3 L 298.4,163.7 L 300.1,164.2 L 300.1,165.4 Z M 460.7,205.5 L 459.9,209.2 L 458.6,207.1 L 460.1,204.6 L 460.8,204.1 L 460.7,205.5 Z" />
+        <path class="map-region tier-low" data-zona="sulawesi" d="M 642.8,108.7 L 636.3,116.1 L 631.9,120.6 L 625.9,122.2 L 613.5,123.8 L 606.0,121.3 L 600.2,119.7 L 577.2,120.8 L 570.3,119.5 L 557.2,120.6 L 547.5,119.2 L 541.8,124.5 L 538.4,132.2 L 538.3,139.7 L 542.8,149.2 L 548.7,152.9 L 553.3,160.1 L 559.9,160.8 L 565.1,154.5 L 571.5,148.3 L 575.0,150.4 L 582.7,149.3 L 586.7,146.7 L 599.8,146.7 L 598.4,144.6 L 605.8,142.7 L 611.1,145.7 L 610.3,152.1 L 605.4,150.0 L 599.0,150.4 L 594.7,155.8 L 586.1,164.0 L 575.9,168.6 L 571.4,171.7 L 566.8,171.1 L 570.0,174.7 L 574.8,178.2 L 580.0,185.5 L 586.9,193.4 L 587.2,196.5 L 587.5,201.4 L 586.1,207.9 L 587.7,210.5 L 592.0,214.0 L 593.7,216.8 L 596.7,219.3 L 598.9,218.6 L 600.0,222.1 L 598.2,225.6 L 596.2,226.1 L 590.8,226.3 L 581.8,230.6 L 581.5,235.2 L 573.1,234.2 L 569.6,229.8 L 571.7,221.7 L 570.7,217.5 L 557.3,207.5 L 557.1,204.2 L 560.7,195.6 L 559.0,188.3 L 551.7,188.2 L 543.2,194.3 L 545.4,200.8 L 547.0,211.7 L 545.9,226.2 L 544.3,238.0 L 546.0,247.4 L 544.3,250.6 L 539.3,251.4 L 533.7,253.2 L 528.2,252.1 L 523.9,245.7 L 527.3,236.2 L 528.9,228.5 L 529.3,217.1 L 526.4,209.9 L 526.2,206.6 L 521.3,205.7 L 513.3,204.1 L 512.3,196.3 L 511.5,190.3 L 513.0,187.8 L 518.1,184.2 L 519.9,176.8 L 523.6,169.9 L 522.8,162.8 L 527.1,150.0 L 533.0,146.9 L 534.0,145.2 L 531.9,131.4 L 534.7,129.4 L 535.7,120.6 L 538.8,115.2 L 542.6,111.6 L 544.6,108.9 L 548.7,112.5 L 551.8,109.8 L 554.9,105.3 L 558.4,101.8 L 563.6,102.9 L 567.9,103.3 L 570.2,106.3 L 577.8,106.6 L 592.5,108.9 L 598.7,111.9 L 602.4,109.9 L 620.4,112.1 L 632.5,104.6 L 636.5,100.0 L 640.6,98.4 L 644.9,93.4 L 650.2,97.7 L 647.7,100.3 L 642.8,108.7 Z M 606.0,229.1 L 606.5,233.8 L 606.3,235.0 L 605.2,233.2 L 604.7,232.8 L 604.4,233.2 L 603.9,233.4 L 603.3,233.4 L 602.6,235.2 L 602.5,236.9 L 601.9,238.0 L 601.5,241.9 L 601.8,242.9 L 602.7,242.4 L 603.2,242.3 L 605.3,243.7 L 606.5,244.8 L 606.2,246.1 L 604.7,247.4 L 603.1,248.0 L 601.9,247.4 L 601.5,247.7 L 600.8,248.3 L 600.2,249.2 L 600.4,250.1 L 598.9,252.7 L 598.1,253.4 L 596.4,252.6 L 595.4,253.3 L 594.5,253.3 L 593.3,250.7 L 593.3,249.5 L 594.4,248.1 L 594.5,247.1 L 595.0,246.0 L 596.4,244.5 L 597.1,243.4 L 597.1,242.7 L 597.8,240.0 L 597.9,238.9 L 598.3,237.7 L 598.9,235.2 L 599.0,230.6 L 601.0,226.8 L 602.9,225.7 L 603.8,225.5 L 603.6,226.5 L 606.0,229.1 Z M 594.5,244.7 L 594.0,246.1 L 592.8,247.3 L 591.8,247.4 L 590.9,247.1 L 589.1,246.1 L 588.6,247.2 L 587.2,247.1 L 586.8,245.8 L 587.7,241.9 L 589.2,240.4 L 589.0,238.8 L 587.8,235.5 L 588.6,233.8 L 591.9,232.5 L 594.8,230.9 L 595.7,230.6 L 596.6,231.8 L 597.0,237.4 L 593.9,241.9 L 594.5,244.7 Z M 606.7,155.7 L 607.2,157.1 L 606.4,158.2 L 607.3,160.5 L 609.4,157.5 L 611.5,157.1 L 612.7,157.6 L 613.5,158.2 L 613.9,159.3 L 613.2,161.7 L 611.8,162.8 L 610.1,163.0 L 609.2,161.6 L 608.0,161.5 L 607.3,164.5 L 606.9,165.0 L 605.9,165.4 L 605.0,164.5 L 604.8,164.1 L 606.1,162.7 L 605.4,158.6 L 604.4,159.4 L 601.8,163.1 L 599.8,164.8 L 599.1,163.9 L 598.1,161.4 L 598.5,158.1 L 600.2,155.9 L 601.5,156.1 L 605.6,155.4 L 606.7,155.7 Z M 581.6,248.4 L 580.2,248.9 L 577.6,246.5 L 576.5,244.4 L 576.8,243.2 L 577.5,242.3 L 577.9,242.0 L 577.8,240.9 L 578.8,240.4 L 579.9,240.5 L 580.6,241.9 L 581.5,242.3 L 582.0,243.7 L 581.6,248.4 Z M 607.4,219.6 L 605.3,222.2 L 603.8,222.1 L 602.0,220.4 L 601.5,218.5 L 601.5,217.8 L 602.7,216.7 L 606.7,217.1 L 607.4,218.0 L 607.4,219.6 Z M 549.0,267.0 L 548.1,270.7 L 547.7,269.4 L 547.5,266.1 L 547.0,264.5 L 547.4,262.6 L 547.3,257.9 L 547.9,255.7 L 549.1,258.5 L 549.4,259.9 L 549.0,267.0 Z M 615.0,167.3 L 613.5,167.4 L 612.5,166.8 L 612.6,163.6 L 613.5,162.9 L 613.9,163.0 L 614.2,164.0 L 614.6,164.8 L 615.4,165.6 L 615.0,167.3 Z M 577.7,139.1 L 578.6,140.1 L 578.1,141.2 L 577.4,140.9 L 575.4,140.9 L 574.7,141.0 L 573.8,141.7 L 573.2,141.7 L 573.6,140.7 L 575.2,139.1 L 576.3,139.4 L 577.7,139.1 Z M 554.3,284.9 L 552.1,285.0 L 551.5,284.8 L 551.2,282.7 L 553.7,283.6 L 554.5,283.7 L 554.3,284.9 Z" />
+        <path class="map-region tier-low" data-zona="bali-ntb" d="M 499.8,310.9 L 500.9,311.7 L 501.9,311.7 L 503.9,310.4 L 505.2,309.9 L 506.5,309.9 L 507.8,310.1 L 509.0,311.0 L 509.5,312.5 L 510.0,313.0 L 510.7,311.2 L 511.7,310.6 L 512.8,310.3 L 514.5,310.5 L 515.8,311.3 L 517.1,313.9 L 517.0,316.2 L 517.5,317.0 L 518.3,317.7 L 518.9,318.5 L 518.4,319.4 L 517.9,319.8 L 516.2,320.3 L 515.5,320.1 L 514.8,319.5 L 514.1,319.2 L 512.3,319.5 L 510.7,320.0 L 510.9,320.8 L 512.2,321.2 L 512.6,321.6 L 512.5,322.1 L 512.0,322.2 L 510.3,321.5 L 509.1,321.6 L 504.9,322.6 L 503.8,322.6 L 503.1,321.7 L 503.2,319.3 L 502.8,318.6 L 499.7,321.5 L 498.7,322.3 L 497.4,322.6 L 496.2,322.5 L 491.6,324.2 L 490.2,324.0 L 488.8,324.0 L 484.0,325.9 L 481.5,326.4 L 480.1,326.4 L 478.8,326.3 L 477.7,326.4 L 476.6,327.2 L 474.4,327.9 L 472.3,327.4 L 470.3,326.7 L 468.5,325.8 L 468.1,324.7 L 468.2,323.4 L 469.0,321.6 L 468.5,318.5 L 468.8,317.0 L 469.5,315.5 L 470.7,315.0 L 472.1,314.9 L 474.5,313.7 L 476.7,312.0 L 477.9,312.1 L 480.8,313.3 L 482.5,313.4 L 485.3,313.2 L 486.5,314.0 L 487.0,315.6 L 487.6,316.2 L 488.4,316.6 L 490.4,319.4 L 492.3,319.3 L 493.9,319.8 L 496.9,318.1 L 499.0,318.1 L 499.7,316.9 L 498.3,315.5 L 496.8,314.3 L 495.9,314.1 L 495.0,314.2 L 494.2,314.0 L 490.7,311.4 L 489.6,310.0 L 489.0,308.4 L 489.4,307.3 L 491.8,306.2 L 492.9,305.9 L 497.2,306.7 L 497.9,307.3 L 499.0,309.8 L 499.8,310.9 Z M 439.7,307.4 L 441.9,308.5 L 445.0,311.9 L 445.2,312.8 L 444.3,313.7 L 442.1,315.2 L 437.3,317.4 L 436.5,318.4 L 435.4,320.4 L 435.2,321.3 L 434.9,321.8 L 434.3,322.1 L 433.2,322.4 L 432.1,322.0 L 433.1,320.7 L 433.2,319.1 L 432.4,317.7 L 431.3,316.5 L 429.1,314.8 L 426.7,313.3 L 424.3,312.6 L 421.8,312.2 L 420.8,311.5 L 419.4,309.7 L 418.9,308.6 L 418.7,307.6 L 418.8,306.6 L 419.5,306.5 L 421.9,306.8 L 426.5,308.0 L 428.8,308.0 L 430.1,307.8 L 433.4,305.4 L 434.2,305.5 L 437.4,306.5 L 439.7,307.4 Z M 465.4,317.3 L 462.7,321.8 L 463.7,322.6 L 464.2,323.2 L 459.7,324.2 L 457.9,323.7 L 456.8,323.8 L 452.2,323.0 L 448.9,321.9 L 448.6,321.1 L 448.8,320.1 L 449.8,320.4 L 452.3,320.6 L 453.3,320.2 L 453.3,317.3 L 452.9,313.5 L 456.3,310.4 L 458.2,309.2 L 460.3,308.4 L 465.5,310.2 L 466.4,310.6 L 467.1,311.3 L 467.4,312.4 L 465.4,317.3 Z M 485.1,312.0 L 484.6,312.0 L 483.6,311.6 L 484.0,310.7 L 483.5,309.2 L 483.6,308.0 L 484.9,307.3 L 487.4,307.2 L 487.5,308.1 L 485.1,312.0 Z M 443.2,320.7 L 442.6,321.5 L 440.9,320.1 L 440.4,319.5 L 441.7,318.7 L 442.2,318.6 L 443.3,319.5 L 443.2,320.7 Z" />
+        <path class="map-region tier-mid" data-zona="ntt" d="M 597.5,317.3 L 594.4,318.0 L 592.6,318.8 L 590.8,319.8 L 589.6,320.0 L 587.5,320.0 L 584.7,319.8 L 582.7,320.2 L 577.2,322.7 L 575.0,322.9 L 573.1,323.5 L 572.5,322.5 L 571.7,321.8 L 569.9,321.7 L 568.0,321.7 L 566.2,323.9 L 563.2,323.4 L 562.1,323.7 L 561.0,324.1 L 559.9,324.3 L 558.7,324.1 L 554.4,322.4 L 549.4,321.4 L 544.5,321.8 L 540.2,320.9 L 537.9,321.6 L 535.7,322.6 L 535.0,321.5 L 534.2,320.6 L 533.5,319.2 L 533.5,317.5 L 533.7,316.4 L 534.3,315.4 L 534.7,314.3 L 535.0,313.1 L 535.9,313.7 L 536.8,313.5 L 539.8,312.2 L 542.6,310.3 L 545.3,309.6 L 546.8,309.4 L 548.0,309.8 L 549.4,309.6 L 550.8,309.2 L 552.9,310.7 L 553.8,311.0 L 556.7,311.1 L 559.4,311.9 L 561.7,313.2 L 565.1,314.4 L 567.2,316.0 L 568.7,316.5 L 569.9,316.7 L 570.9,316.5 L 572.3,315.4 L 573.8,315.0 L 575.2,315.0 L 577.7,314.7 L 578.8,314.5 L 579.9,313.9 L 581.1,314.2 L 582.1,314.8 L 586.3,317.6 L 587.6,317.7 L 589.9,317.1 L 590.7,316.3 L 591.0,315.1 L 591.7,314.2 L 592.6,313.4 L 593.6,312.7 L 596.7,311.7 L 598.9,310.6 L 600.4,308.8 L 597.0,308.0 L 597.7,306.8 L 598.8,306.0 L 600.4,306.3 L 601.7,307.3 L 602.2,311.1 L 601.2,311.7 L 600.5,312.3 L 600.1,313.0 L 598.1,314.5 L 598.8,316.2 L 598.3,316.9 L 597.5,317.3 Z M 537.9,333.9 L 538.9,334.8 L 542.4,336.7 L 542.9,337.5 L 543.2,338.8 L 543.9,339.8 L 545.5,339.9 L 547.2,339.7 L 548.4,340.4 L 549.6,341.3 L 551.2,343.2 L 552.7,345.3 L 554.5,346.5 L 555.6,348.2 L 554.9,349.8 L 552.6,351.9 L 551.4,352.4 L 549.8,352.5 L 547.0,353.8 L 546.1,353.1 L 543.1,352.7 L 540.8,351.8 L 538.8,350.1 L 537.6,348.3 L 536.1,346.7 L 533.6,345.6 L 529.1,342.5 L 526.2,342.2 L 525.1,342.5 L 523.9,342.5 L 517.9,341.1 L 517.0,340.2 L 516.3,339.2 L 515.6,338.2 L 515.2,337.0 L 516.0,336.0 L 516.8,335.3 L 520.1,334.1 L 522.5,333.7 L 525.2,333.8 L 529.3,333.4 L 533.3,334.0 L 534.4,333.5 L 536.4,332.2 L 537.1,332.7 L 537.9,333.9 Z M 622.1,309.9 L 619.0,310.5 L 617.2,313.2 L 615.7,313.2 L 614.9,314.4 L 614.7,314.9 L 614.8,315.4 L 614.6,315.8 L 614.0,316.3 L 612.7,315.5 L 611.5,316.5 L 611.0,316.8 L 609.2,315.6 L 607.6,315.7 L 607.1,315.5 L 609.1,313.6 L 611.9,311.7 L 612.4,311.0 L 611.3,310.8 L 610.7,310.5 L 610.5,310.1 L 612.3,309.8 L 613.5,309.7 L 614.5,310.3 L 615.1,310.3 L 618.8,308.1 L 620.4,308.6 L 621.4,309.2 L 622.1,309.9 Z M 601.1,367.2 L 599.1,367.2 L 598.4,367.0 L 598.2,365.0 L 598.8,364.0 L 603.5,362.6 L 605.3,361.3 L 607.9,358.7 L 609.4,358.0 L 609.8,357.7 L 610.1,357.7 L 610.4,359.8 L 611.1,360.9 L 611.1,361.6 L 608.8,362.6 L 606.8,364.9 L 602.2,366.5 L 601.1,367.2 Z M 609.0,311.7 L 608.5,312.6 L 602.7,312.6 L 602.9,311.3 L 604.5,310.0 L 605.0,309.5 L 606.8,309.1 L 609.4,309.9 L 609.0,311.7 Z M 526.1,320.1 L 525.3,320.3 L 524.4,320.0 L 524.7,318.0 L 524.3,316.8 L 525.1,315.7 L 525.4,313.9 L 525.8,313.3 L 526.2,313.9 L 526.5,314.3 L 526.9,314.5 L 527.9,314.5 L 528.2,315.3 L 528.1,316.0 L 527.7,316.8 L 526.5,317.7 L 525.7,318.6 L 526.1,320.1 Z M 578.2,360.3 L 577.1,360.5 L 574.8,359.9 L 574.3,359.5 L 576.2,358.4 L 577.8,357.0 L 579.6,356.8 L 580.6,357.1 L 580.3,358.9 L 578.2,360.3 Z M 601.7,315.8 L 601.0,317.1 L 599.8,316.8 L 600.1,315.5 L 600.7,314.8 L 602.4,313.7 L 604.1,313.6 L 605.1,313.9 L 605.4,314.3 L 602.8,314.8 L 601.7,315.8 Z M 611.1,354.0 L 609.1,354.8 L 609.1,353.2 L 610.7,351.1 L 612.0,350.5 L 612.8,351.3 L 612.8,351.6 L 610.8,352.4 L 611.1,354.0 Z" />
+        <path class="map-region tier-high" data-zona="maluku" d="M 703.9,111.9 L 705.5,112.4 L 707.1,112.2 L 707.9,111.2 L 708.2,110.0 L 709.0,107.7 L 710.9,106.1 L 712.2,105.8 L 713.1,105.1 L 713.0,103.4 L 713.0,101.7 L 714.4,99.9 L 718.8,97.3 L 721.2,96.4 L 724.5,96.2 L 724.9,97.1 L 724.5,98.5 L 725.1,100.6 L 724.8,106.3 L 724.0,107.1 L 720.8,109.0 L 717.1,110.6 L 716.1,111.2 L 715.2,112.8 L 715.3,114.4 L 718.2,116.4 L 722.8,118.4 L 723.8,119.3 L 724.4,120.8 L 724.6,122.5 L 725.6,123.3 L 727.2,123.6 L 728.2,124.5 L 729.1,125.6 L 721.3,123.0 L 719.3,121.8 L 716.8,121.6 L 714.4,121.3 L 711.9,120.3 L 709.3,120.1 L 708.1,120.8 L 707.5,122.2 L 707.2,123.8 L 707.8,125.8 L 707.8,127.0 L 707.3,129.2 L 709.2,135.7 L 711.6,140.8 L 715.1,146.2 L 716.9,148.0 L 718.8,149.7 L 715.7,149.2 L 714.7,147.4 L 710.7,145.6 L 709.9,144.6 L 707.3,139.5 L 706.5,138.5 L 704.1,136.8 L 703.0,135.5 L 702.7,133.8 L 703.0,132.0 L 702.8,129.5 L 702.9,127.1 L 703.4,124.0 L 702.6,123.0 L 701.4,122.0 L 700.1,119.6 L 699.7,117.0 L 699.8,115.5 L 700.3,114.2 L 701.1,113.0 L 701.3,111.9 L 699.3,110.2 L 697.4,105.5 L 697.2,103.1 L 699.7,98.4 L 699.6,96.2 L 700.2,94.8 L 700.4,93.4 L 701.7,90.2 L 703.9,87.6 L 707.5,83.9 L 708.9,83.1 L 710.5,82.5 L 710.6,83.5 L 710.3,84.2 L 707.7,88.1 L 707.3,88.9 L 707.2,90.5 L 708.5,91.4 L 709.9,93.3 L 710.2,95.9 L 710.2,98.6 L 709.9,101.4 L 709.4,102.3 L 707.2,105.1 L 702.2,108.3 L 701.8,109.0 L 701.8,110.0 L 702.7,111.0 L 703.9,111.9 Z M 747.4,192.5 L 752.4,194.9 L 754.9,195.3 L 759.2,195.0 L 760.9,195.2 L 765.0,198.3 L 766.1,200.4 L 766.4,202.2 L 767.1,203.9 L 768.2,204.3 L 769.3,204.5 L 770.9,207.0 L 771.2,207.8 L 770.0,214.1 L 765.1,211.7 L 760.5,209.0 L 758.5,208.0 L 753.1,205.7 L 752.3,204.9 L 751.7,203.9 L 749.3,202.5 L 744.7,202.3 L 742.9,202.3 L 742.2,202.6 L 742.4,203.3 L 742.4,204.8 L 741.2,205.3 L 738.3,204.3 L 735.7,204.0 L 733.5,203.0 L 730.4,202.5 L 730.1,202.0 L 730.4,201.3 L 730.3,200.7 L 729.6,200.4 L 728.2,200.5 L 726.9,201.2 L 725.8,202.0 L 724.3,204.0 L 723.4,204.8 L 720.8,205.2 L 719.7,205.0 L 718.7,204.5 L 715.7,200.7 L 714.7,199.8 L 713.6,199.1 L 712.5,198.8 L 711.5,199.4 L 710.9,200.6 L 710.6,202.0 L 710.3,202.8 L 709.0,205.1 L 708.0,206.4 L 707.6,206.2 L 708.2,204.0 L 708.2,202.8 L 707.5,201.6 L 707.1,200.2 L 712.1,194.0 L 714.0,192.5 L 721.9,192.0 L 726.7,192.3 L 729.3,192.2 L 731.0,191.7 L 732.5,191.9 L 732.8,193.1 L 733.7,194.1 L 734.9,194.0 L 737.2,193.0 L 739.2,191.5 L 740.4,190.9 L 741.6,190.8 L 742.8,190.9 L 744.1,191.2 L 747.4,192.5 Z M 643.5,324.5 L 643.4,326.4 L 643.8,326.9 L 644.6,327.1 L 647.3,325.8 L 647.8,326.1 L 648.4,326.6 L 648.4,328.4 L 647.3,329.8 L 644.7,329.9 L 644.3,330.4 L 644.3,331.2 L 644.5,332.1 L 645.1,332.8 L 645.9,334.0 L 646.6,336.8 L 645.1,338.0 L 644.4,340.2 L 641.7,342.2 L 638.9,345.6 L 636.6,347.3 L 634.6,349.3 L 632.8,350.6 L 630.7,351.1 L 627.4,351.4 L 623.1,353.8 L 620.6,354.9 L 618.2,355.0 L 616.0,354.2 L 615.2,353.3 L 615.3,352.1 L 616.1,351.1 L 617.0,350.2 L 617.6,349.1 L 615.0,347.7 L 614.9,346.7 L 615.8,343.9 L 616.5,341.0 L 617.4,339.1 L 621.0,335.6 L 623.1,333.8 L 624.5,333.1 L 624.8,333.9 L 625.6,334.8 L 626.2,334.9 L 626.6,334.7 L 629.7,335.0 L 630.5,334.7 L 631.7,333.3 L 632.5,332.5 L 633.1,330.9 L 633.2,329.8 L 636.0,329.1 L 637.5,328.3 L 638.9,327.0 L 642.8,325.0 L 643.5,324.5 Z M 685.2,197.3 L 688.7,199.0 L 689.5,200.1 L 690.2,201.4 L 690.9,202.2 L 691.7,202.8 L 693.1,203.9 L 693.4,205.7 L 693.1,209.2 L 691.5,209.5 L 690.0,210.0 L 686.9,212.0 L 685.4,212.4 L 683.8,212.6 L 682.6,213.1 L 681.4,213.3 L 678.4,212.2 L 675.5,210.9 L 671.3,208.6 L 670.5,208.0 L 669.8,206.8 L 667.9,204.6 L 667.4,203.1 L 667.3,199.1 L 667.7,198.2 L 668.6,197.7 L 671.4,198.7 L 673.2,197.7 L 678.6,196.8 L 684.1,196.9 L 685.2,197.3 Z M 644.5,167.3 L 646.5,168.1 L 647.2,168.1 L 647.9,167.2 L 648.3,167.0 L 649.2,167.5 L 649.4,168.9 L 650.7,168.7 L 651.7,169.2 L 652.0,169.6 L 651.9,171.1 L 648.1,171.3 L 645.3,172.5 L 641.6,171.4 L 637.4,173.2 L 634.8,173.8 L 632.7,173.8 L 630.7,170.6 L 631.8,166.9 L 632.7,166.3 L 634.1,166.0 L 637.9,165.8 L 644.5,167.3 Z M 683.9,296.8 L 684.2,297.8 L 684.2,298.3 L 681.6,298.7 L 679.1,299.8 L 677.8,301.2 L 676.8,302.9 L 673.4,302.2 L 670.4,302.1 L 669.0,301.5 L 667.5,301.5 L 665.6,302.1 L 662.9,303.6 L 662.3,303.7 L 662.6,301.4 L 663.3,300.0 L 666.1,296.7 L 668.5,297.4 L 671.3,297.6 L 674.4,297.0 L 676.6,295.5 L 679.7,294.7 L 682.3,296.7 L 683.9,296.8 Z M 713.0,166.3 L 711.6,167.2 L 711.0,167.5 L 707.8,166.9 L 704.1,167.0 L 700.3,167.8 L 698.0,167.1 L 696.6,166.0 L 696.7,164.8 L 698.0,161.9 L 700.9,159.6 L 702.1,159.2 L 704.1,159.8 L 707.6,161.5 L 710.4,163.6 L 712.9,165.1 L 713.0,166.3 Z M 719.5,85.7 L 716.0,86.1 L 715.3,85.1 L 714.3,80.4 L 716.7,76.7 L 719.8,74.5 L 721.9,73.9 L 722.6,73.9 L 724.5,76.6 L 723.1,82.0 L 721.5,84.7 L 719.5,85.7 Z M 636.0,307.1 L 636.5,308.4 L 638.2,307.6 L 639.9,307.5 L 643.5,307.6 L 646.2,307.9 L 647.8,308.5 L 648.0,311.1 L 647.2,311.7 L 633.2,313.7 L 631.8,313.0 L 631.3,312.4 L 632.8,310.4 L 632.1,309.5 L 632.9,308.0 L 634.6,307.0 L 636.0,307.1 Z M 700.3,137.2 L 702.8,140.5 L 701.2,143.5 L 702.3,145.3 L 705.4,145.4 L 706.2,146.0 L 706.8,146.8 L 707.1,147.8 L 706.3,148.7 L 704.5,149.5 L 702.5,148.4 L 702.0,147.3 L 701.6,146.9 L 698.9,147.7 L 698.1,147.8 L 697.6,146.3 L 698.2,144.3 L 696.4,143.3 L 694.6,141.2 L 694.5,140.3 L 695.2,138.8 L 695.1,137.6 L 696.2,137.5 L 697.9,139.1 L 698.8,137.6 L 699.5,136.9 L 700.3,137.2 Z M 667.2,169.1 L 673.8,169.9 L 672.8,170.6 L 665.7,171.9 L 663.2,171.7 L 655.4,172.4 L 654.5,172.4 L 654.3,171.2 L 653.5,170.3 L 654.7,169.6 L 656.4,169.4 L 660.6,169.7 L 667.2,169.1 Z M 684.2,42.7 L 683.4,43.2 L 682.0,43.0 L 681.8,41.9 L 683.2,39.9 L 684.2,37.8 L 683.1,37.3 L 682.2,36.0 L 682.1,34.4 L 683.0,31.5 L 684.2,31.8 L 685.2,33.0 L 685.7,35.4 L 686.5,37.1 L 684.9,39.5 L 684.2,42.7 Z M 629.8,311.1 L 628.5,312.5 L 627.6,314.8 L 626.8,315.5 L 625.1,316.0 L 624.0,313.6 L 622.1,313.7 L 623.1,311.7 L 623.9,310.9 L 625.2,310.9 L 625.7,311.7 L 626.0,311.9 L 628.8,308.4 L 629.3,308.4 L 629.8,308.5 L 630.2,309.0 L 629.8,311.1 Z M 715.6,210.1 L 715.0,210.9 L 713.8,211.4 L 712.7,211.4 L 713.1,210.6 L 712.8,210.2 L 712.0,210.3 L 710.8,210.9 L 709.2,212.2 L 708.2,211.6 L 708.1,210.6 L 708.2,210.2 L 710.0,208.5 L 712.3,208.2 L 715.4,206.6 L 716.7,206.6 L 716.4,207.7 L 716.0,208.4 L 715.7,209.2 L 715.6,210.1 Z M 749.2,303.0 L 747.9,305.0 L 746.6,304.9 L 743.9,302.2 L 744.1,300.3 L 744.3,299.7 L 745.3,299.5 L 748.6,300.1 L 749.3,301.6 L 749.2,303.0 Z M 667.8,183.5 L 667.5,183.9 L 666.2,182.7 L 665.3,179.4 L 664.6,178.5 L 663.7,175.4 L 663.9,174.5 L 665.0,173.2 L 665.9,173.2 L 666.5,174.0 L 666.1,177.4 L 668.0,181.7 L 667.8,183.5 Z M 693.5,141.1 L 692.2,141.6 L 690.7,141.6 L 690.4,139.3 L 690.9,136.3 L 692.3,135.9 L 694.4,136.5 L 693.6,137.2 L 694.2,138.8 L 693.5,141.1 Z M 705.9,306.2 L 709.6,307.0 L 711.8,306.9 L 712.3,307.7 L 710.2,309.6 L 705.8,308.1 L 705.1,306.6 L 705.9,306.2 Z M 659.3,55.7 L 658.8,56.4 L 656.1,55.1 L 656.3,53.2 L 656.0,52.3 L 655.3,51.3 L 655.0,50.3 L 655.3,49.2 L 656.8,50.6 L 657.8,52.7 L 659.0,54.8 L 659.3,55.7 Z M 694.6,147.2 L 694.4,147.7 L 692.1,147.1 L 691.5,146.8 L 692.7,143.7 L 693.8,143.8 L 694.7,146.7 L 694.6,147.2 Z M 724.1,286.3 L 723.1,286.8 L 721.5,285.7 L 721.1,285.2 L 722.1,284.1 L 723.2,283.8 L 723.9,284.3 L 724.2,284.8 L 724.0,285.3 L 724.1,286.3 Z M 743.0,134.3 L 742.1,134.4 L 741.3,133.1 L 739.1,131.7 L 737.8,129.3 L 742.8,133.3 L 743.0,134.3 Z M 721.8,208.2 L 718.1,209.3 L 718.9,207.2 L 719.4,206.6 L 721.2,207.2 L 721.8,208.2 Z M 697.2,295.8 L 695.8,296.3 L 696.2,294.7 L 696.2,293.4 L 698.4,293.8 L 698.4,294.9 L 698.2,295.2 L 697.2,295.8 Z" />
+        <path class="map-region tier-high" data-zona="papua" d="M 988.6,187.0 L 988.6,191.2 L 988.7,204.4 L 988.7,217.7 L 988.7,230.9 L 988.7,244.1 L 988.7,257.4 L 988.7,268.1 L 986.3,276.6 L 988.7,283.8 L 988.7,297.1 L 988.7,310.3 L 988.7,323.6 L 987.6,327.6 L 980.2,319.8 L 967.8,308.2 L 968.5,305.8 L 966.3,306.2 L 957.4,307.7 L 952.3,306.3 L 950.4,305.9 L 943.9,309.2 L 943.7,306.0 L 946.3,300.5 L 948.2,295.0 L 944.9,292.6 L 941.8,288.8 L 943.4,286.7 L 947.6,287.2 L 947.3,286.6 L 937.6,280.9 L 943.4,279.2 L 939.7,274.2 L 934.1,268.0 L 931.5,258.1 L 929.0,256.4 L 930.1,253.8 L 926.6,254.3 L 926.3,250.7 L 923.1,246.9 L 920.4,245.6 L 909.2,237.7 L 906.3,237.8 L 902.7,236.8 L 895.0,234.9 L 883.8,229.8 L 869.9,226.8 L 864.4,226.9 L 853.5,217.4 L 855.0,215.5 L 850.5,216.7 L 844.4,216.0 L 841.9,212.7 L 838.1,213.2 L 835.7,210.2 L 831.8,205.9 L 834.0,198.7 L 832.3,197.3 L 831.3,203.3 L 828.9,206.6 L 826.0,212.5 L 822.6,218.5 L 816.5,219.2 L 813.7,216.0 L 814.4,207.4 L 807.6,198.3 L 797.9,193.9 L 795.1,190.8 L 802.7,188.6 L 811.3,190.8 L 819.8,183.5 L 826.1,184.9 L 831.3,186.7 L 833.4,183.5 L 836.7,182.2 L 835.5,178.5 L 837.1,175.9 L 824.9,178.4 L 814.3,179.6 L 804.4,178.9 L 798.3,175.7 L 795.6,172.3 L 792.1,164.1 L 779.4,161.3 L 775.4,161.7 L 775.2,158.2 L 778.3,155.6 L 779.6,149.8 L 784.1,147.3 L 794.9,142.9 L 798.4,140.1 L 809.1,138.1 L 823.0,144.1 L 835.5,146.2 L 841.1,148.7 L 841.2,154.2 L 844.3,159.9 L 841.9,165.5 L 841.9,173.0 L 842.9,180.4 L 849.3,189.2 L 850.9,184.8 L 852.7,189.0 L 856.9,193.5 L 857.8,200.0 L 862.2,203.0 L 870.7,202.9 L 878.7,195.3 L 882.0,189.6 L 888.2,183.0 L 894.9,178.6 L 906.9,174.3 L 905.9,170.3 L 916.5,164.3 L 924.9,164.1 L 940.6,170.3 L 947.1,173.5 L 956.6,178.3 L 971.1,181.3 L 974.1,182.9 L 983.2,184.7 L 988.6,187.0 Z M 936.2,309.9 L 931.1,312.8 L 924.4,312.3 L 922.0,312.2 L 918.0,312.9 L 917.2,312.4 L 918.0,309.7 L 921.1,302.5 L 924.9,296.2 L 926.5,294.6 L 928.7,293.0 L 931.1,291.8 L 936.5,290.5 L 941.3,290.8 L 942.0,291.3 L 944.1,293.4 L 945.4,295.0 L 946.0,297.4 L 943.9,301.4 L 941.7,305.3 L 937.9,308.3 L 936.2,309.9 Z M 854.8,254.2 L 854.6,255.0 L 854.6,256.6 L 854.9,258.0 L 854.0,259.5 L 854.9,261.6 L 855.0,262.7 L 854.9,264.3 L 854.7,265.0 L 854.1,267.0 L 853.4,267.7 L 852.9,267.9 L 852.4,268.5 L 848.2,267.8 L 846.3,266.4 L 844.7,264.9 L 844.4,264.3 L 842.5,262.5 L 842.0,261.9 L 842.0,261.0 L 843.6,260.7 L 845.2,260.8 L 845.1,259.9 L 846.1,256.9 L 843.6,255.0 L 843.1,254.2 L 844.0,253.7 L 846.0,254.3 L 848.5,251.0 L 849.3,250.3 L 849.6,248.4 L 851.0,248.1 L 852.0,248.4 L 852.6,249.5 L 852.9,250.6 L 852.6,251.5 L 853.8,252.0 L 854.8,254.2 Z M 781.2,304.0 L 780.8,304.2 L 778.1,303.9 L 776.7,303.9 L 776.8,302.3 L 776.0,301.1 L 777.1,299.3 L 777.1,297.2 L 778.3,296.9 L 778.4,295.7 L 779.8,292.5 L 780.5,291.8 L 781.7,291.5 L 783.0,289.7 L 783.8,289.1 L 784.6,287.7 L 785.7,287.1 L 785.6,285.9 L 786.3,285.2 L 788.0,284.8 L 789.3,285.3 L 790.1,286.6 L 788.0,288.1 L 789.1,291.8 L 787.6,295.9 L 786.7,297.1 L 784.9,298.1 L 784.4,299.2 L 782.3,301.1 L 781.7,302.9 L 781.5,303.6 L 781.2,304.0 Z M 770.2,130.4 L 773.9,131.3 L 774.7,131.1 L 780.2,133.6 L 781.0,134.7 L 780.7,135.5 L 781.5,136.6 L 779.8,138.2 L 778.9,138.4 L 778.0,137.8 L 776.3,137.4 L 774.3,138.1 L 773.0,137.6 L 771.9,136.1 L 770.1,135.2 L 767.4,132.0 L 766.1,132.2 L 766.4,133.4 L 767.5,134.2 L 769.1,136.6 L 769.9,136.8 L 770.8,136.8 L 772.0,137.8 L 771.9,139.3 L 768.8,139.9 L 767.8,138.8 L 767.5,136.7 L 765.8,137.4 L 765.1,138.2 L 764.5,138.2 L 763.4,136.1 L 760.0,136.0 L 757.8,134.8 L 758.9,133.6 L 759.0,132.5 L 760.5,131.9 L 762.0,132.4 L 763.4,131.6 L 764.5,131.8 L 765.3,131.3 L 768.2,131.0 L 770.2,130.4 Z M 868.5,144.4 L 873.1,145.3 L 874.7,145.2 L 876.3,146.2 L 878.3,145.7 L 879.4,146.0 L 883.2,149.3 L 885.1,151.5 L 887.8,153.4 L 889.8,154.1 L 888.3,155.8 L 885.3,156.7 L 884.1,156.7 L 881.8,155.7 L 879.9,155.9 L 878.2,154.6 L 877.9,152.6 L 876.3,148.1 L 874.1,149.4 L 871.5,147.4 L 870.8,147.3 L 870.6,147.7 L 869.5,147.0 L 868.6,145.6 L 868.5,144.4 Z M 850.2,270.2 L 849.9,271.7 L 849.5,273.4 L 847.6,275.3 L 846.3,278.3 L 845.7,279.0 L 843.0,280.3 L 840.7,278.7 L 840.0,277.3 L 841.0,270.8 L 842.0,271.0 L 842.7,271.0 L 842.9,270.5 L 841.4,269.8 L 841.1,266.1 L 841.2,264.7 L 842.3,264.4 L 843.7,265.5 L 845.6,267.4 L 847.7,269.0 L 850.2,270.2 Z M 870.4,164.8 L 878.9,165.9 L 881.2,165.8 L 886.1,166.2 L 890.1,167.7 L 897.1,167.9 L 899.3,168.4 L 900.9,169.4 L 897.0,170.2 L 895.1,170.9 L 891.6,171.3 L 888.7,170.9 L 886.6,171.4 L 885.8,170.6 L 882.8,169.9 L 878.9,168.3 L 870.7,166.5 L 870.3,165.4 L 870.4,164.8 Z M 760.3,167.0 L 760.6,168.3 L 761.8,169.5 L 761.4,171.3 L 760.9,171.6 L 761.2,172.5 L 761.7,173.1 L 760.7,173.5 L 759.9,173.3 L 758.8,173.9 L 758.0,174.8 L 755.5,175.1 L 754.7,174.3 L 750.3,173.4 L 747.4,171.4 L 747.0,170.8 L 752.5,168.5 L 755.0,167.9 L 757.0,167.9 L 759.6,167.0 L 760.3,167.0 Z M 774.3,158.8 L 773.5,159.4 L 770.9,158.9 L 769.5,157.6 L 768.6,155.8 L 768.0,154.3 L 767.8,153.1 L 767.1,151.6 L 767.1,151.1 L 771.9,149.6 L 772.9,150.2 L 774.9,150.2 L 775.8,151.3 L 775.2,156.1 L 774.3,158.8 Z M 944.0,312.5 L 942.9,312.7 L 937.5,312.1 L 936.9,311.2 L 936.9,310.7 L 938.1,309.8 L 939.3,308.3 L 941.1,307.8 L 941.9,307.8 L 944.1,311.3 L 944.0,312.5 Z M 815.6,258.4 L 813.9,260.3 L 815.5,255.9 L 815.8,253.7 L 817.4,252.3 L 819.6,245.6 L 820.2,245.8 L 821.0,246.4 L 819.8,251.4 L 816.6,254.8 L 815.6,258.4 Z M 813.1,257.3 L 811.7,259.4 L 810.9,258.7 L 810.3,258.7 L 810.0,257.5 L 810.3,254.9 L 809.3,252.0 L 810.7,252.1 L 811.1,252.9 L 811.6,253.2 L 813.0,256.0 L 813.1,257.3 Z M 772.2,147.2 L 771.6,148.3 L 770.6,149.0 L 761.3,150.4 L 762.1,149.6 L 762.5,148.8 L 763.1,148.4 L 764.0,148.5 L 764.5,148.2 L 764.9,148.1 L 765.4,148.3 L 766.4,147.9 L 768.2,148.1 L 770.2,148.0 L 770.0,146.9 L 772.2,147.2 Z M 771.2,310.9 L 769.4,311.6 L 770.6,309.9 L 774.7,306.0 L 776.0,306.7 L 778.0,306.8 L 775.1,308.6 L 772.2,309.3 L 771.2,310.9 Z M 859.4,154.5 L 858.4,154.9 L 857.3,154.5 L 856.1,152.8 L 856.5,151.5 L 857.8,150.7 L 859.0,151.5 L 859.3,152.7 L 860.1,152.7 L 859.4,154.5 Z M 766.1,141.8 L 764.9,141.8 L 762.7,140.9 L 764.0,140.0 L 764.8,139.8 L 765.5,139.4 L 765.9,139.4 L 766.8,139.8 L 767.4,140.5 L 766.1,141.8 Z M 795.3,286.7 L 795.0,287.7 L 794.1,287.2 L 793.2,285.9 L 791.9,285.7 L 790.9,285.4 L 790.4,284.8 L 794.0,284.6 L 795.3,286.7 Z M 829.5,222.5 L 830.6,223.6 L 828.0,222.7 L 824.4,220.8 L 824.1,219.5 L 827.2,221.5 L 829.5,222.5 Z" />
+
+        <!-- Labels -->
+        <text x="108" y="152" class="map-label" text-anchor="middle">SUMATRA</text>
+        <text x="323" y="289" class="map-label" text-anchor="middle">JAWA</text>
+        <text x="387" y="113" class="map-label" text-anchor="middle">KALIMANTAN</text>
+        <text x="559" y="174" class="map-label" text-anchor="middle">SULAWESI</text>
+        <text x="434" y="313" class="map-label" text-anchor="middle">BALI</text>
+        <text x="581" y="347" class="map-label" text-anchor="middle">NTT</text>
+        <text x="710" y="174" class="map-label" text-anchor="middle">MALUKU</text>
+        <text x="903" y="217" class="map-label" text-anchor="middle">PAPUA</text>
+      </svg>
+      <div class="map-legend">
+        <div class="map-legend-item" data-zona-group="low">
+          <span class="legend-swatch tier-low"></span>
+          <span class="legend-text">Jawa-Lampung-Sumsel · Bali-NTB · Sulawesi</span>
+          <span class="legend-value">13.500 / 14.900</span>
+        </div>
+        <div class="map-legend-item" data-zona-group="mid">
+          <span class="legend-swatch tier-mid"></span>
+          <span class="legend-text">Sumatra (lain) · NTT · Kalimantan</span>
+          <span class="legend-value">14.000 / 15.400</span>
+        </div>
+        <div class="map-legend-item" data-zona-group="high">
+          <span class="legend-swatch tier-high"></span>
+          <span class="legend-text">Maluku · Papua</span>
+          <span class="legend-value">15.500 / 15.800</span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--muted); margin-top:4px; padding-top:8px; border-top:1px dashed var(--line); letter-spacing:0.04em;">
+          Harga = HET medium / premium (Rp/kg). Pengelompokan visual berdasarkan tingkat harga — dokumen Bapanas list 8 wilayah individual (lihat tabel).
+        </div>
+      </div>
+    </div>
+
+    <!-- WILAYAH DETAIL PANEL (replaces small sidebar) -->
+    <div class="panel span-4">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title"><em>8 Wilayah</em> & HET aktif.</div>
+          <div class="panel-sub">klik baris untuk pilih · zona aktif tampil ringkas</div>
+        </div>
+      </div>
+      <div class="map-detail" id="mapDetail">
+        <div class="map-detail-title">Zona aktif</div>
+        <div class="map-detail-name" id="mapDetailName">Jawa, Lampung, Sumatera Selatan</div>
+        <div class="map-detail-rows" id="mapDetailRows"></div>
+      </div>
+      <div class="wilayah-list" id="wilayahFullList" style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line);"></div>
+    </div>
+
+    <!-- Section 06 (Kalkulator) dipindah ke drawer (sidebar). Lihat tombol kanan-bawah. -->
+
+  </div>
+
+  <footer>
+    <div>
+      <div class="tagline"><em>"Semua bisa dihitung — termasuk kemana margin beras pergi."</em></div>
+      <div class="legal">
+        Rice Journey Dashboard v0.2 · Single-page · Bahasa Indonesia<br>
+        Math reconcile: harga pabrik & retail final 100% match dokumen Bapanas.
+      </div>
+    </div>
+    <div class="links">
+      <span>Oleh</span> <strong>@aliftowew</strong> · Tenaga Ahli Kemenko Pangan RI<br>
+      <span>Stack</span> Vanilla HTML/CSS/JS · Vercel-ready
+    </div>
+  </footer>
+
+</div>
+
+<!-- ============== CALCULATOR DRAWER (sidebar) ============== -->
+<button class="calc-drawer-fab" id="calcFab" aria-label="Buka kalkulator what-if">
+  <span class="fab-icon">⚙</span>
+  <span>Kalkulator</span>
+</button>
+
+<div class="calc-drawer-overlay" id="calcOverlay"></div>
+
+<aside class="calc-drawer" id="calcDrawer" aria-hidden="true">
+  <div class="calc-drawer-head">
+    <div class="calc-drawer-head-text">
+      <div class="eyebrow">06 · Kalkulator</div>
+      <h2><em>What-If</em> Simulasi.</h2>
+      <div class="sub">geser slider biaya tiap tahap · output update real-time vs default & HET zona aktif</div>
+    </div>
+    <button class="calc-drawer-close" id="calcDrawerClose" aria-label="Tutup">✕</button>
+  </div>
+
+  <div class="calc-drawer-body">
+    <!-- OUTPUT (di atas, selalu terlihat saat scroll inputs) -->
+    <div class="calc-drawer-output">
+      <div class="calc-output-block">
+        <div class="calc-output-label">Harga di Pengecer</div>
+        <div class="calc-output-value"><span class="currency">Rp</span><span id="calcTotal">13.544</span></div>
+        <div class="calc-output-delta" id="calcVsDefault">default Rp 13.544 · <strong>nilai default</strong></div>
+      </div>
+
+      <div class="calc-output-divider"></div>
+
+      <div class="calc-output-block">
+        <div class="calc-output-label">VS HET Zona Aktif</div>
+        <div class="calc-output-het-name" id="calcHetWilayah">Jawa, Lampung, Sumsel</div>
+        <div class="calc-output-het-value" id="calcHetValue">HET Rp 13.500</div>
+      </div>
+
+      <div class="calc-output-status" id="calcStatus">
+        <span class="arrow" id="calcStatusArrow">▲</span>
+        <span id="calcStatusText">Rp 44 di atas HET (+0,3%)</span>
+      </div>
+    </div>
+
+    <!-- INPUTS -->
+    <div class="calc-inputs" id="calcInputs"></div>
+  </div>
+
+  <div class="calc-drawer-foot">
+    <button id="calcResetBtn">Reset Default</button>
+    <button class="primary" id="calcDrawerCloseBottom">Tutup</button>
+  </div>
+</aside>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const HET_DATA = [
+  { id: 'jawa-lampung-sumsel', wilayah: 'Jawa, Lampung, Sumatera Selatan', medium: 13500, premium: 14900, tier: 'low', note: 'Sentra produksi utama' },
+  { id: 'sumatera-lain', wilayah: 'Aceh, Sumut, Sumbar, Bengkulu, Riau, Kepri, Jambi, Babel', medium: 14000, premium: 15400, tier: 'mid', note: 'Sumatra non-sentra' },
+  { id: 'bali-ntb', wilayah: 'Bali & Nusa Tenggara Barat', medium: 13500, premium: 14900, tier: 'low', note: 'Sentra Lombok' },
+  { id: 'ntt', wilayah: 'Nusa Tenggara Timur', medium: 14000, premium: 15400, tier: 'mid', note: 'Konsumen, jauh dari sentra' },
+  { id: 'sulawesi', wilayah: 'Sulawesi', medium: 13500, premium: 14900, tier: 'low', note: 'Sentra Sulsel' },
+  { id: 'kalimantan', wilayah: 'Kalimantan', medium: 14000, premium: 15400, tier: 'mid', note: 'Sentra Kalsel' },
+  { id: 'maluku', wilayah: 'Maluku', medium: 15500, premium: 15800, tier: 'high', note: 'Logistik antarpulau' },
+  { id: 'papua', wilayah: 'Papua', medium: 15500, premium: 15800, tier: 'high', note: 'Logistik antarpulau' }
+];
+
+// Waterfall steps — semua angka dari PDF Bapanas exact
+const WATERFALL = {
+  medium: [
+    { id: 'start',           label: 'GKP di petani',              tip: 'GKP = Gabah Kering Panen. Gabah baru dipanen kadar air ±25%, langsung dari sawah.', from: 0,     to: 6500,  delta: 6500,  cls: 'start',          note: 'Rp 6.500 base' },
+    { id: 'handling',        label: 'Handling petani',            tip: 'Tambahan biaya: karung Rp 6, juru timbang Rp 50, tenaga muat Rp 50, calo Rp 50, susut Rp 50, margin pengumpul Rp 50.', from: 6500,  to: 6756,  delta: 256,   cls: 'handling',       note: 'karung, timbang, muat, calo, susut, margin pengumpul' },
+    { id: 'transport',       label: 'Transport ke pabrik',        tip: 'Truk dari sawah ke RMU (Rice Milling Unit). Biaya tetap per kg.', from: 6756,  to: 6950,  delta: 194,   cls: 'transport',      note: 'truk dari sawah ke RMU' },
+    { id: 'pengeringan',     label: 'Pengeringan + susut 16%',    tip: '⚠️ SPIKE: Biaya driyer hanya Rp 150, tapi susut 16% massa air bikin biaya per kg sisa melonjak. Per 1 kg GKP jadi 0,84 kg GKG.', from: 6950,  to: 8338,  delta: 1388,  cls: 'susut-pengeringan', spike: true, note: 'biaya driyer Rp 150 + dilution susut air' },
+    { id: 'pk',              label: 'Pecah Kulit + susut 25%',    tip: '⚠️ SPIKE TERBESAR: PK = Pecah Kulit (brown rice). Sekam (kulit gabah) 25% massa dipisah jadi limbah/bahan bakar. Biaya per kg sisa lompat 35%.', from: 8338,  to: 11217, delta: 2879,  cls: 'susut-pk',       spike: true, note: 'biaya PK Rp 100 + dilution susut sekam' },
+    { id: 'whitener',        label: 'Whitener (offset katul)',    tip: 'Whitener = mesin pengupas kulit luar PK. Hasilkan katul coklat 8% × Rp 4.700 = Rp 376/kg input (offset terhadap biaya).', from: 11217, to: 11867, delta: 650,   cls: 'whitener',       note: 'biaya 50, katul coklat 8% offset Rp 376' },
+    { id: 'poles',           label: 'Poles minimal',              tip: 'Beras medium tidak melalui polishing intensif. Hanya susut handling 1%.', from: 11867, to: 12327, delta: 460,   cls: 'poles',          note: 'medium tidak melalui polishing intensif' },
+    { id: 'pabrik',          label: 'Pabrik (overhead+margin)',   tip: 'Packing Rp 50 + overhead/maintenance Rp 300 + margin penggilingan Rp 200 + kemasan internal Rp 50.', from: 12327, to: 12927, delta: 600,   cls: 'pabrik',         note: 'packing 50, overhead 300, margin 200, kemasan 50' },
+    { id: 'distribusi',      label: 'Distribusi general trade',   tip: 'GT = General Trade, pasar tradisional. Biaya distribusi rendah (Rp 100/kg) karena tidak ada cold chain atau retur.', from: 12927, to: 13027, delta: 100,   cls: 'distribusi',     note: 'pasar tradisional' },
+    { id: 'margin',          label: 'Margin pengecer 4%',         tip: 'Pengecer GT ambil margin 4% dari harga pokok. 4% × Rp 12.927 = Rp 517.', from: 13027, to: 13544, delta: 517,   cls: 'margin',         note: '4% × Rp 12.927' }
+  ],
+  premium: [
+    { id: 'start',           label: 'GKP di petani',              tip: 'GKP = Gabah Kering Panen. Gabah baru dipanen kadar air ±25%, langsung dari sawah. Sumber GKP sama dengan medium.', from: 0,     to: 6500,  delta: 6500,  cls: 'start',          note: 'Rp 6.500 base' },
+    { id: 'handling',        label: 'Handling petani',            tip: 'Tambahan biaya: karung Rp 6, juru timbang Rp 50, tenaga muat Rp 50, calo Rp 50, susut Rp 50, margin pengumpul Rp 50.', from: 6500,  to: 6756,  delta: 256,   cls: 'handling',       note: 'karung, timbang, muat, calo, susut, margin pengumpul' },
+    { id: 'transport',       label: 'Transport ke pabrik',        tip: 'Truk dari sawah ke RMU. Biaya tetap per kg.', from: 6756,  to: 6950,  delta: 194,   cls: 'transport',      note: 'truk dari sawah ke RMU' },
+    { id: 'pengeringan',     label: 'Pengeringan + susut 16%',    tip: '⚠️ SPIKE: Biaya driyer hanya Rp 150, tapi susut 16% massa air bikin biaya per kg sisa melonjak. Per 1 kg GKP jadi 0,84 kg GKG.', from: 6950,  to: 8338,  delta: 1388,  cls: 'susut-pengeringan', spike: true, note: 'biaya driyer Rp 150 + dilution susut air' },
+    { id: 'pk',              label: 'Pecah Kulit + susut 25%',    tip: '⚠️ SPIKE TERBESAR: PK = Pecah Kulit (brown rice). Sekam 25% massa dipisah jadi limbah/bahan bakar. Biaya per kg sisa lompat 35%.', from: 8338,  to: 11217, delta: 2879,  cls: 'susut-pk',       spike: true, note: 'biaya PK Rp 100 + dilution susut sekam' },
+    { id: 'whitener',        label: 'Whitener (offset katul)',    tip: 'Whitener = pengupas kulit luar PK. Premium ambil katul coklat 7% × Rp 4.700 = Rp 329/kg input (offset). Sedikit lebih kecil dari medium karena premium pertahankan lebih banyak beras putih.', from: 11217, to: 11783, delta: 566,   cls: 'whitener',       note: 'biaya 50, katul coklat 7% offset Rp 329' },
+    { id: 'poles',           label: 'Poles + 4 side product',     tip: 'Polisher (permukaan halus) + sorter (pisahkan patah/rijek). Hasilkan 4 side product: katul putih, menir, beras patah, beras rijek — total offset Rp 575.', from: 11783, to: 12810, delta: 1027,  cls: 'poles',          note: 'polisher+sorter, side products offset Rp 575' },
+    { id: 'pabrik',          label: 'Pabrik (overhead+margin)',   tip: 'Packing Rp 50 + overhead/maintenance Rp 300 + margin penggilingan Rp 200 + kemasan internal Rp 60 (lebih baik dari medium).', from: 12810, to: 13420, delta: 610,   cls: 'pabrik',         note: 'packing 50, overhead 300, margin 200, kemasan 60' },
+    { id: 'repack',          label: 'Repack 5 kg modern',         tip: 'Beras premium dijual ritel modern dalam kemasan 5kg. Biaya repack ulang dari karung 50kg ke kemasan ritel.', from: 13420, to: 13820, delta: 400,   cls: 'repack',         note: 'kemasan ritel modern' },
+    { id: 'distribusi',      label: 'Distribusi modern + promo',  tip: 'MT = Modern Trade. Biaya tinggi (Rp 700/kg): cold chain, retur barang, promo, listing fee — 7× biaya distribusi GT.', from: 13820, to: 14520, delta: 700,   cls: 'distribusi',     note: 'cold chain, return, promo MT' },
+    { id: 'margin',          label: 'Margin pengecer 5%',         tip: 'Pengecer modern ambil margin 5% dari harga pokok. 5% × Rp 13.820 = Rp 691. Lebih tinggi dari GT yang 4%.', from: 14520, to: 15211, delta: 691,   cls: 'margin',         note: '5% × Rp 13.820' }
+  ]
+};
+
+// Funnel mass cascade per 1.000 kg GKP
+const FUNNEL = {
+  medium: [
+    { name: 'GKP awal',         kg: 1000, pct: 100,    yield: '100%', loss: null,           tier: 't1' },
+    { name: 'GKG',              kg: 840,  pct: 84,     yield: '84%',  loss: '−160 kg uap',  tier: 't2' },
+    { name: 'Pecah Kulit',      kg: 630,  pct: 63,     yield: '75%',  loss: '−210 kg sekam', tier: 't3' },
+    { name: 'Beras Putih',      kg: 580,  pct: 58,     yield: '92%',  loss: '−50 kg katul', tier: 't4' },
+    { name: 'Beras Final',      kg: 574,  pct: 57.4,   yield: '99%',  loss: '−6 kg susut',  tier: 't5' }
+  ],
+  premium: [
+    { name: 'GKP awal',         kg: 1000, pct: 100,    yield: '100%', loss: null,            tier: 't1' },
+    { name: 'GKG',              kg: 840,  pct: 84,     yield: '84%',  loss: '−160 kg uap',   tier: 't2' },
+    { name: 'Pecah Kulit',      kg: 630,  pct: 63,     yield: '75%',  loss: '−210 kg sekam', tier: 't3' },
+    { name: 'Beras Putih',      kg: 586,  pct: 58.6,   yield: '93%',  loss: '−44 kg katul',  tier: 't4' },
+    { name: 'Beras Final',      kg: 527,  pct: 52.7,   yield: '90,3%', loss: '−59 kg side+susut', tier: 't5' }
+  ]
+};
+
+// Cost composition per kg final — must sum to final price exactly
+const COST_COMP = {
+  medium: {
+    total: 13544,
+    sideProductInfo: { value: 236880, label: 'Rp 237k / 1.000 kg GKP awal · katul coklat' },
+    segments: [
+      { id: 'bahan-baku',  label: 'Bahan baku GKP',         value: 6500, color: '#1a1612' },
+      { id: 'handling',    label: 'Handling pre-pabrik',    value: 450,  color: '#3a3128' },
+      { id: 'susut-dry',   label: 'Susut pengeringan',      value: 1388, color: '#7d3119' },
+      { id: 'susut-pk',    label: 'Susut Pecah Kulit',      value: 2879, color: '#a8472a' },
+      { id: 'milling',     label: 'Milling',                value: 1110, color: '#2d3a5e' },
+      { id: 'pabrik',      label: 'Pabrik + kemasan',       value: 600,  color: '#c89030' },
+      { id: 'distribusi',  label: 'Distribusi GT',          value: 100,  color: '#e2b66a' },
+      { id: 'retail',      label: 'Margin pengecer 4%',     value: 517,  color: '#3d6b4f' }
+    ]
+  },
+  premium: {
+    total: 15211,
+    sideProductInfo: { value: 559689, label: 'Rp 560k / 1.000 kg GKP awal · 5 jenis byproduct' },
+    segments: [
+      { id: 'bahan-baku',  label: 'Bahan baku GKP',         value: 6500, color: '#1a1612' },
+      { id: 'handling',    label: 'Handling pre-pabrik',    value: 450,  color: '#3a3128' },
+      { id: 'susut-dry',   label: 'Susut pengeringan',      value: 1388, color: '#7d3119' },
+      { id: 'susut-pk',    label: 'Susut Pecah Kulit',      value: 2879, color: '#a8472a' },
+      { id: 'milling',     label: 'Milling intensif',       value: 1593, color: '#2d3a5e' },
+      { id: 'pabrik',      label: 'Pabrik + repack 5kg',    value: 1010, color: '#c89030' },
+      { id: 'distribusi',  label: 'Distribusi MT + promo',  value: 700,  color: '#e2b66a' },
+      { id: 'retail',      label: 'Margin pengecer 5%',     value: 691,  color: '#3d6b4f' }
+    ]
+  }
+};
+
+// Side products per 1.000 kg GKP
+const SIDE_PRODUCTS = {
+  medium: {
+    totalRp: 236880,
+    items: [
+      { id: 'katul-coklat', name: 'Katul Coklat', mass: '50,4 kg', rate: '@Rp 4.700', value: 236880, pct: 100, cls: 'b1' }
+    ],
+    note: 'Beras medium hanya hasilkan katul coklat. Side product lain tidak dihasilkan karena tidak melalui polishing intensif.'
+  },
+  premium: {
+    totalRp: 559689,
+    items: [
+      { id: 'katul-coklat', name: 'Katul Coklat', mass: '44,1 kg', rate: '@Rp 4.700', value: 207270, cls: 'b1' },
+      { id: 'patah',        name: 'Beras Patah', mass: '17,6 kg', rate: '@Rp 8.000', value: 140616, cls: 'b2' },
+      { id: 'katul-putih',  name: 'Katul Putih', mass: '17,6 kg', rate: '@Rp 4.800', value: 84370,  cls: 'b3' },
+      { id: 'menir',        name: 'Menir',       mass: '8,8 kg',  rate: '@Rp 7.500', value: 65914,  cls: 'b4' },
+      { id: 'rijek',        name: 'Beras Rijek', mass: '8,8 kg',  rate: '@Rp 7.000', value: 61519,  cls: 'b5' }
+    ],
+    note: 'Premium hasilkan 5 jenis side product senilai total Rp 560k per 1.000 kg GKP — offset signifikan terhadap biaya proses.'
+  }
+};
+
+// Comparison categories — sum to final price (13.544 / 15.211)
+const COMPARISON = [
+  { cat: 'Bahan baku GKP',     sub: 'harga di petani — sama keduanya',       medium: 6500, premium: 6500 },
+  { cat: 'Handling pre-pabrik', sub: 'karung, muat, calo, transport',        medium: 450,  premium: 450 },
+  { cat: 'Susut pengeringan',  sub: '−16% massa air · biaya naik dilution',  medium: 1388, premium: 1388 },
+  { cat: 'Susut Pecah Kulit',  sub: '−25% massa sekam · biaya naik dilution', medium: 2879, premium: 2879 },
+  { cat: 'Milling',            sub: 'whitener · poles · sortir',             medium: 1110, premium: 1593 },
+  { cat: 'Pabrik + kemasan',   sub: 'overhead, margin, packing (+ repack)',  medium: 600,  premium: 1010 },
+  { cat: 'Distribusi',         sub: 'general trade vs modern market',        medium: 100,  premium: 700 },
+  { cat: 'Margin pengecer',    sub: '4% GT vs 5% MT',                        medium: 517,  premium: 691 }
+];
+
+// Detail breakdown — EXACT replica of PDF Bapanas tables (4 stages per grade)
+// Each row shows: no, item, harga (Rp), biaya, susut, rdm
+// This is the SOURCE OF TRUTH from PDF — every line item visible (including Calo, Karung, etc.)
+const PDF_DETAIL = {
+  premium: [
+    { stage: 'GKP to GKG', items: [
+      { no: 1,  item: 'GKP (Petani)',           harga: 6500,  biaya: null, susut: null,  rdm: '100%' },
+      { no: 2,  item: 'Juru Timbang, Karung',   harga: 6,     biaya: 50,   susut: null,  rdm: '100%' },
+      { no: 3,  item: 'Tenaga Muat',            harga: null,  biaya: 50,   susut: '0%',  rdm: '100%' },
+      { no: 4,  item: 'Calo',                   harga: null,  biaya: 50,   susut: '0%',  rdm: '100%' },
+      { no: 5,  item: 'susut',                  harga: null,  biaya: 50,   susut: null,  rdm: '100%' },
+      { no: 6,  item: 'Margin Pengumpul',       harga: null,  biaya: 50,   susut: null,  rdm: '100%' },
+      { no: 7,  item: 'Harga Diatas Truk',      harga: 6756,  biaya: null, susut: null,  rdm: null,   bold: true },
+      { no: 8,  item: 'transportasi ke pabrik', harga: null,  biaya: 200,  susut: null,  rdm: '100%' },
+      { no: 9,  item: 'Harga Di terima Pabrik', harga: 6950,  biaya: null, susut: null,  rdm: '100%', bold: true },
+      { no: 10, item: 'Biaya Driyer dan ayak',  harga: null,  biaya: 150,  susut: null,  rdm: '100%' },
+      { no: 11, item: 'Susut',                  harga: null,  biaya: null, susut: '16%', rdm: '85%',  spike: true },
+      { no: 12, item: 'Rendemen GKG',           harga: 8338,  biaya: null, susut: null,  rdm: '84%' },
+      { no: 13, item: 'Harga GKG (Ka 14%)',     harga: 8338,  biaya: null, susut: null,  rdm: '84%',  bold: true },
+    ]},
+    { stage: 'GKG to PK', items: [
+      { no: 1, item: 'GKG',                       harga: 8338,  biaya: null, susut: null, rdm: '100%' },
+      { no: 2, item: 'Biaya PK',                  harga: null,  biaya: 100,  susut: null, rdm: '100%' },
+      { no: 3, item: 'Rendemen PK',               harga: 11217, biaya: null, susut: '25%', rdm: '75%', spike: true },
+      { no: 4, item: 'Harga PK (Brk 10%, Ka 14%)', harga: 11217, biaya: null, susut: null, rdm: '75%',  bold: true },
+    ]},
+    { stage: 'Proses Jadi Beras Glosor / Putih', items: [
+      { no: 1, item: 'PK (Brk 10%, Ka 14%)',  harga: 11217, biaya: null, susut: null,   rdm: '100%' },
+      { no: 2, item: 'Biaya Whitener',        harga: null,  biaya: 50,   susut: null,   rdm: '100%' },
+      { no: 3, item: 'Katul Coklat',          harga: null,  biaya: 329,  susut: '7%',   rdm: '93%', byprod: true },
+      { no: 4, item: 'Beras Patah',           harga: null,  biaya: null, susut: '0%',   rdm: '93%' },
+      { no: 5, item: 'Rendemen Beras Putih',  harga: 11783, biaya: null, susut: null,   rdm: '93%' },
+      { no: 6, item: 'Harga Beras Putih (Brk 18%, Ka 14%, Ds 80%)', harga: 11783, biaya: null, susut: null, rdm: '93%', bold: true, spec: 'Brk Maks 18%, Ka 14%, Ds 80%, Reject 0%' },
+    ]},
+    { stage: 'Proses Jadi Beras Poles Premium', items: [
+      { no: 7,  item: 'Biaya Polisher',                       harga: null, biaya: 20,   susut: null,    rdm: '93%' },
+      { no: 8,  item: 'Katul Putih',                          harga: null, biaya: 144,  susut: '3%',    rdm: '90%', byprod: true },
+      { no: 9,  item: 'Menir',                                harga: null, biaya: 113,  susut: '1,5%',  rdm: '89%', byprod: true },
+      { no: 10, item: 'Biaya Sorter',                         harga: null, biaya: 10,   susut: null,    rdm: '89%' },
+      { no: 11, item: 'Beras Rijek (2% × 7000)',              harga: null, biaya: 128,  susut: '1,5%',  rdm: '87%', byprod: true },
+      { no: 12, item: 'Beras Patah (3% × 8000)',              harga: null, biaya: 190,  susut: '2%',    rdm: '85%', byprod: true },
+      { no: 13, item: 'susut',                                harga: null, biaya: null, susut: '1%',    rdm: '84%' },
+      { no: 14, item: 'Rendemen Beras Poles',                 harga: 12810, biaya: null, susut: null,   rdm: '84%' },
+      { no: 15, item: 'Packing dan muat',                     harga: null, biaya: 50,   susut: null,    rdm: '84%' },
+      { no: 16, item: 'penyusutan, maintenance dan overhead', harga: null, biaya: 300,  susut: null,    rdm: '84%' },
+      { no: 17, item: 'Margin Penggilingan',                  harga: null, biaya: 200,  susut: null,    rdm: '84%' },
+      { no: 19, item: 'Kemasan (5kg)',                        harga: null, biaya: 60,   susut: null,    rdm: '84%' },
+      { no: 18, item: 'Harga Beras Putih di pabrik kemasan 50Kg', harga: 13420, biaya: null, susut: null, rdm: '84%', bold: true, spec: 'Brk Maks 15%, Ka 14%, Ds 100%, Reject 0%' },
+    ]},
+    { stage: 'Proses Premium Kemasan 5kg Hingga Distribusi', items: [
+      { no: 19, item: 'Kemasan (5kg)',                            harga: null,  biaya: 400,  susut: null, rdm: '84%' },
+      { no: 20, item: 'Harga Pokok Beras Premium modern market', harga: 13820, biaya: null, susut: null, rdm: null,  bold: true },
+      { no: 21, item: 'Biaya Distribusi Modern, return, promo, etc', harga: null, biaya: 700, susut: null, rdm: null },
+      { no: 22, item: 'Margin pengecer modern',                  harga: null,  biaya: 691,  susut: '5%', rdm: null },
+      { no: 23, item: 'Harga pengecer',                          harga: 15211, biaya: null, susut: null, rdm: null,  bold: true, final: true },
+    ]},
+  ],
+  medium: [
+    { stage: 'GKP to GKG', items: [
+      { no: 1,  item: 'GKP (Petani)',           harga: 6500,  biaya: null, susut: null,  rdm: '100%' },
+      { no: 2,  item: 'Juru Timbang, Karung',   harga: 6,     biaya: 50,   susut: null,  rdm: '100%' },
+      { no: 3,  item: 'Tenaga Muat',            harga: null,  biaya: 50,   susut: '0%',  rdm: '100%' },
+      { no: 4,  item: 'Calo',                   harga: null,  biaya: 50,   susut: '0%',  rdm: '100%' },
+      { no: 5,  item: 'susut',                  harga: null,  biaya: 50,   susut: null,  rdm: '100%' },
+      { no: 6,  item: 'Margin Pengumpul',       harga: null,  biaya: 50,   susut: null,  rdm: '100%' },
+      { no: 7,  item: 'Harga Diatas Truk',      harga: 6756,  biaya: null, susut: null,  rdm: null,   bold: true },
+      { no: 8,  item: 'transportasi ke pabrik', harga: null,  biaya: 200,  susut: null,  rdm: '100%' },
+      { no: 9,  item: 'Harga Di terima Pabrik', harga: 6950,  biaya: null, susut: null,  rdm: '100%', bold: true },
+      { no: 10, item: 'Biaya Driyer dan ayak',  harga: null,  biaya: 150,  susut: null,  rdm: '100%' },
+      { no: 11, item: 'Susut',                  harga: null,  biaya: null, susut: '16%', rdm: '85%',  spike: true },
+      { no: 12, item: 'Rendemen GKG',           harga: 8338,  biaya: null, susut: null,  rdm: '84%' },
+      { no: 13, item: 'Harga GKG (Ka 14%)',     harga: 8338,  biaya: null, susut: null,  rdm: '84%',  bold: true },
+    ]},
+    { stage: 'GKG to PK', items: [
+      { no: 1, item: 'GKG',                       harga: 8338,  biaya: null, susut: null, rdm: '100%' },
+      { no: 2, item: 'Biaya PK',                  harga: null,  biaya: 100,  susut: null, rdm: '100%' },
+      { no: 3, item: 'Rendemen PK',               harga: 11217, biaya: null, susut: '25%', rdm: '75%', spike: true },
+      { no: 4, item: 'Harga PK (Brk 10%, Ka 14%)', harga: 11217, biaya: null, susut: null, rdm: '75%', bold: true },
+    ]},
+    { stage: 'Proses Jadi Beras Glosor / Putih', items: [
+      { no: 1, item: 'PK (Brk 10%, Ka 14%)',  harga: 11217, biaya: null, susut: null,   rdm: '100%' },
+      { no: 2, item: 'Biaya Whitener',        harga: null,  biaya: 50,   susut: null,   rdm: '100%' },
+      { no: 3, item: 'Katul Coklat',          harga: null,  biaya: 376,  susut: '8%',   rdm: '92%', byprod: true },
+      { no: 4, item: 'Beras Patah',           harga: null,  biaya: null, susut: '0%',   rdm: '92%' },
+      { no: 5, item: 'Rendemen Beras Putih',  harga: 11867, biaya: null, susut: null,   rdm: '92%' },
+      { no: 6, item: 'Harga Beras Putih (Brk 25%, Ka 14%, Ds 95%)', harga: 11867, biaya: null, susut: null, rdm: '92%', bold: true, spec: 'Brk Maks 25%, Ka 14%, Ds 95%, Reject ++' },
+    ]},
+    { stage: 'Proses Jadi Beras Poles (Medium)', items: [
+      { no: 7,  item: 'Biaya Polisher',                       harga: null, biaya: null, susut: null,    rdm: '92%', note: 'tidak di-poles intensif' },
+      { no: 8,  item: 'Katul Putih',                          harga: null, biaya: null, susut: '0%',    rdm: '92%', note: 'tidak dihasilkan' },
+      { no: 9,  item: 'Menir',                                harga: null, biaya: null, susut: '0%',    rdm: '92%', note: 'tidak dihasilkan' },
+      { no: 10, item: 'Biaya Sorter',                         harga: null, biaya: null, susut: null,    rdm: '92%', note: 'tidak di-sortir' },
+      { no: 11, item: 'Beras Rijek',                          harga: null, biaya: null, susut: '0%',    rdm: '92%', note: 'tidak dihasilkan' },
+      { no: 12, item: 'Beras Patah',                          harga: null, biaya: null, susut: '0%',    rdm: '92%', note: 'tidak dihasilkan' },
+      { no: 13, item: 'susut',                                harga: null, biaya: null, susut: '1%',    rdm: '91%' },
+      { no: 14, item: 'Rendemen Beras Poles',                 harga: 12327, biaya: null, susut: null,   rdm: '91%' },
+      { no: 15, item: 'Packing dan muat',                     harga: null, biaya: 50,   susut: null,    rdm: '91%' },
+      { no: 16, item: 'penyusutan, maintenance dan overhead', harga: null, biaya: 300,  susut: null,    rdm: '91%' },
+      { no: 17, item: 'Margin Penggilingan',                  harga: null, biaya: 200,  susut: null,    rdm: '91%' },
+      { no: 19, item: 'Kemasan (5kg) — internal',             harga: null, biaya: 50,   susut: null,    rdm: '91%' },
+      { no: 18, item: 'Harga Beras Putih di pabrik kemasan 50Kg', harga: 12927, biaya: null, susut: null, rdm: '91%', bold: true, spec: 'Brk 18%-25%, Ka 14%, Ds 95%, Reject ++' },
+    ]},
+    { stage: 'Distribusi Medium (General Trade)', items: [
+      { no: 19, item: 'Kemasan (5kg)',                            harga: null,  biaya: 0,    susut: null, rdm: '91%', note: 'medium tidak repack ke 5kg' },
+      { no: 20, item: 'Harga Pokok Beras Medium general trade', harga: 12927, biaya: null, susut: null, rdm: null,  bold: true },
+      { no: 21, item: 'Biaya Distribusi GT',                   harga: null,  biaya: 100,  susut: null, rdm: null },
+      { no: 22, item: 'Margin pengecer GT',                    harga: null,  biaya: 517,  susut: '4%', rdm: null },
+      { no: 23, item: 'Harga pengecer',                        harga: 13544, biaya: null, susut: null, rdm: null,  bold: true, final: true },
+    ]},
+  ]
+};
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  grade: 'medium',
+  wilayahId: 'jawa-lampung-sumsel'
+};
+
+// ============================================================
+// FORMATTERS
+// ============================================================
+function fmt(n) {
+  if (n === null || n === undefined) return '—';
+  const sign = n < 0 ? '−' : '';
+  return sign + Math.abs(Math.round(n)).toLocaleString('id-ID');
+}
+function fmtR(n) { return 'Rp ' + fmt(n); }
+function fmtRk(n) {
+  if (n >= 1000000) return 'Rp ' + (n/1000000).toFixed(1).replace('.',',') + ' jt';
+  if (n >= 1000) return 'Rp ' + (n/1000).toFixed(0) + 'k';
+  return 'Rp ' + fmt(n);
+}
+
+// ============================================================
+// RENDER: KPIs
+// ============================================================
+function renderKPIs() {
+  const wf = WATERFALL[state.grade];
+  const start = 6500;
+  const final = wf[wf.length - 1].to;
+  const pabrik = wf.find(s => s.id === 'pabrik').to;
+  const yieldPct = state.grade === 'medium' ? 57.4 : 52.7;
+  const finalKg = state.grade === 'medium' ? 574 : 527;
+
+  document.getElementById('kpiStart').textContent = fmt(start);
+  document.getElementById('kpiPabrik').textContent = fmt(pabrik);
+  document.getElementById('kpiPabrikDelta').textContent = '+' + Math.round((pabrik - start) / start * 100) + '% dari GKP';
+  document.getElementById('kpiRetail').textContent = fmt(final);
+  document.getElementById('kpiRetailDelta').textContent = '+' + Math.round((final - start) / start * 100) + '% dari GKP';
+  document.getElementById('kpiRetailSub').textContent = state.grade === 'medium'
+    ? '/kg di pasar tradisional · general trade'
+    : '/kg di ritel modern · modern market';
+  document.getElementById('kpiYield').textContent = yieldPct.toFixed(1).replace('.',',');
+  document.getElementById('kpiYieldSub').textContent = `${finalKg} g beras dari 1 kg GKP awal`;
+  document.getElementById('kpiLossText').textContent = `−${(100-yieldPct).toFixed(1).replace('.',',')}% massa`;
+
+  document.getElementById('titleFinal').textContent = fmtR(final);
+}
+
+// ============================================================
+// RENDER: WATERFALL
+// ============================================================
+function renderWaterfall() {
+  const steps = WATERFALL[state.grade];
+  const final = steps[steps.length - 1].to;
+  const max = Math.ceil(final / 4000) * 4000; // round to next 4k
+  const rangeMax = Math.max(16000, max);
+
+  const container = document.getElementById('waterfall');
+  container.innerHTML = steps.map((step, i) => {
+    const fromPct = step.from / rangeMax * 100;
+    const widthPct = (step.to - step.from) / rangeMax * 100;
+    const isStart = step.id === 'start';
+
+    return `
+      <div class="waterfall-row">
+        <div class="waterfall-label">
+          <span class="step-no">${(i+1).toString().padStart(2, '0')}</span>${step.label}${step.tip ? ` <span class="info-tip" data-tip="${step.tip.replace(/"/g, '&quot;')}">?</span>` : ''}
+        </div>
+        <div class="waterfall-bar-zone">
+          <div class="waterfall-segment ${step.cls} ${step.spike ? 'spike' : ''}"
+               style="left: ${isStart ? 0 : fromPct}%; width: ${isStart ? (step.to / rangeMax * 100) : widthPct}%;">
+            <div class="seg-bar"></div>
+          </div>
+        </div>
+        <div class="waterfall-delta ${step.spike ? 'spike' : ''}">
+          <div class="end-value">Rp ${fmt(step.to)}</div>
+          ${!isStart ? `<span class="delta">+${fmt(step.delta)}</span>` : '<span class="delta" style="color:var(--emerald);">base</span>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Callouts: top 2 spikes
+  const spikes = steps.filter(s => s.spike).sort((a,b) => b.delta - a.delta);
+  document.getElementById('waterfallCallouts').innerHTML = spikes.slice(0, 2).map((s, idx) => `
+    <div class="callout">
+      <div class="callout-label">Spike #${idx+1} · ${s.label}</div>
+      <div class="callout-value">+Rp ${fmt(s.delta)}/kg</div>
+      <div class="callout-text">${s.note}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// RENDER: INDONESIA MAP
+// ============================================================
+function renderMap() {
+  const map = document.getElementById('indonesiaMap');
+  const regions = map.querySelectorAll('.map-region');
+
+  regions.forEach(r => {
+    r.classList.toggle('active', r.dataset.zona === state.wilayahId);
+    r.onclick = () => {
+      state.wilayahId = r.dataset.zona;
+      document.getElementById('wilayahSelect').value = state.wilayahId;
+      renderMap();
+      renderMapDetail();
+      if (typeof calcUpdateOutput === 'function') calcUpdateOutput();
+    };
+  });
+}
+
+function renderMapDetail() {
+  const w = HET_DATA.find(h => h.id === state.wilayahId);
+  if (!w) return;
+  const wf = WATERFALL[state.grade];
+  const final = wf[wf.length - 1].to;
+  const het = state.grade === 'medium' ? w.medium : w.premium;
+  const diff = final - het;
+  const overOrOk = diff > 0 ? 'over' : 'ok';
+  const arrow = diff > 0 ? '▲' : '▼';
+
+  document.getElementById('mapDetailName').textContent = w.wilayah;
+  document.getElementById('mapDetailRows').innerHTML = `
+    <div class="map-detail-row"><span class="lbl">HET ${state.grade}</span><span class="val">Rp ${fmt(het)}</span></div>
+    <div class="map-detail-row"><span class="lbl">Hitung Bapanas</span><span class="val">Rp ${fmt(final)}</span></div>
+    <div class="map-detail-row"><span class="lbl">Selisih</span><span class="val ${overOrOk}">${arrow} Rp ${fmt(Math.abs(diff))} (${(diff/het*100).toFixed(1).replace('.',',')}%)</span></div>
+    <div class="map-detail-row"><span class="lbl">Catatan</span><span class="val" style="font-weight:400; color:var(--ink-soft); font-size:10.5px;">${w.note}</span></div>
+  `;
+
+  // Render full wilayah list
+  renderWilayahFullList();
+}
+
+function renderWilayahFullList() {
+  const list = document.getElementById('wilayahFullList');
+  if (!list) return;
+  list.innerHTML = HET_DATA.map((h, i) => {
+    const price = state.grade === 'medium' ? h.medium : h.premium;
+    return `
+      <div class="wilayah-list-row ${h.id === state.wilayahId ? 'active' : ''}" data-zona="${h.id}">
+        <span class="name"><span class="num">${i+1}</span>${h.wilayah}</span>
+        <span class="price">Rp ${fmt(price)}</span>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.wilayah-list-row').forEach(row => {
+    row.onclick = () => {
+      state.wilayahId = row.dataset.zona;
+      document.getElementById('wilayahSelect').value = state.wilayahId;
+      renderMap();
+      renderMapDetail();
+      if (typeof calcUpdateOutput === 'function') calcUpdateOutput();
+    };
+  });
+}
+
+// ============================================================
+// RENDER: FUNNEL
+// ============================================================
+function renderFunnel() {
+  const data = FUNNEL[state.grade];
+  const container = document.getElementById('funnelContainer');
+  container.innerHTML = data.map(f => `
+    <div class="funnel-step">
+      <div class="funnel-step-info">
+        <div class="stage-name">${f.name}</div>
+        <div class="stage-yield">rdm ${f.yield}</div>
+      </div>
+      <div class="funnel-step-bar-wrap">
+        <div class="funnel-bar ${f.tier}" style="width: ${f.pct}%">
+          ${f.kg.toLocaleString('id-ID')} kg
+        </div>
+        ${f.loss ? `<div class="funnel-loss">${f.loss}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+
+  const final = data[data.length-1];
+  const lostKg = 1000 - final.kg;
+  document.getElementById('funnelSummary').innerHTML = `
+    Dari <span class="num">1.000 kg GKP</span> awal di petani, hanya <span class="num">${final.kg} kg</span> sampai sebagai beras siap jual. <strong>${lostKg} kg (${(lostKg/10).toFixed(1).replace('.',',')}%) hilang</strong> sebagai uap, sekam, dan side product di sepanjang rantai.
+  `;
+}
+
+// ============================================================
+// RENDER: SIDE PRODUCT TREEMAP
+// ============================================================
+function renderSideProductTreemap() {
+  const data = SIDE_PRODUCTS[state.grade];
+  document.getElementById('sideProductTag').textContent = 'Rp ' + (data.totalRp/1000).toFixed(0) + 'k';
+
+  const grid = document.getElementById('sideProductTreemap');
+
+  if (state.grade === 'medium') {
+    grid.style.gridTemplateColumns = '1fr';
+    grid.style.gridTemplateRows = '1fr auto';
+    grid.innerHTML = `
+      <div class="tm-block b1" style="grid-column: span 1; grid-row: span 1;">
+        <div>
+          <div class="tm-name">Katul Coklat</div>
+          <div class="tm-mass">50,4 kg @ Rp 4.700</div>
+        </div>
+        <div>
+          <div class="tm-value">Rp 237k</div>
+          <div class="tm-value-sub">/ 1.000 kg GKP awal</div>
+        </div>
+      </div>
+      <div class="tm-empty">Beras medium tidak melalui polishing intensif.<br>Tidak ada katul putih, menir, rijek, atau patah.</div>
+    `;
+  } else {
+    grid.style.gridTemplateColumns = '1.4fr 1fr';
+    grid.style.gridTemplateRows = '1fr 1fr 0.7fr';
+    grid.innerHTML = data.items.map((item, idx) => {
+      const styles = [
+        'grid-column: span 1; grid-row: span 2;',
+        'grid-column: span 1; grid-row: span 1;',
+        'grid-column: span 1; grid-row: span 1;',
+        'grid-column: span 1; grid-row: span 1;',
+        'grid-column: span 1; grid-row: span 1;'
+      ];
+      return `
+        <div class="tm-block ${item.cls}" style="${styles[idx]}">
+          <div>
+            <div class="tm-name">${item.name}</div>
+            <div class="tm-mass">${item.mass} ${item.rate}</div>
+          </div>
+          <div>
+            <div class="tm-value">${fmtRk(item.value)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+// ============================================================
+// RENDER: COMPARISON BAR CHART
+// ============================================================
+function renderComparison() {
+  const max = Math.max(...COMPARISON.map(c => Math.max(Math.abs(c.medium), Math.abs(c.premium))));
+  const grid = document.getElementById('comparisonGrid');
+  grid.innerHTML = COMPARISON.map(c => {
+    const medPct = Math.abs(c.medium) / max * 100;
+    const premPct = Math.abs(c.premium) / max * 100;
+    const isNeg = c.medium < 0 || c.premium < 0;
+    return `
+      <div class="comp-row">
+        <div class="comp-cat">
+          ${c.cat}
+          <span class="cat-sub">${c.sub}</span>
+        </div>
+        <div class="comp-bars">
+          <div class="comp-bar-wrap">
+            <span class="comp-bar-label">M</span>
+            <div class="comp-bar medium" style="width: ${medPct}%; ${isNeg && c.medium < 0 ? 'background:var(--emerald);' : ''}">
+              ${isNeg && c.medium < 0 ? '−' : ''}Rp ${fmt(Math.abs(c.medium))}
+            </div>
+          </div>
+          <div class="comp-bar-wrap">
+            <span class="comp-bar-label">P</span>
+            <div class="comp-bar premium" style="width: ${premPct}%; ${isNeg && c.premium < 0 ? 'background:var(--emerald-soft);' : ''}">
+              ${isNeg && c.premium < 0 ? '−' : ''}Rp ${fmt(Math.abs(c.premium))}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================================
+// RENDER: UNIFIED VISUAL WATERFALL — chunky bars like funnel chart
+// Each line item = one row. Bar width proportional to cumulative price.
+// Harga visible inside bar; right columns show biaya/susut/rdm.
+// ============================================================
+function renderUniWaterfall() {
+  const stages = PDF_DETAIL[state.grade];
+  const container = document.getElementById('uniWaterfall');
+
+  // Range: final price = 100% width
+  const RANGE_MAX = state.grade === 'premium' ? 16000 : 14000;
+
+  let lastCumulative = 0; // For anchoring byproduct/cost-only tags
+
+  let html = '';
+  stages.forEach((stage, sIdx) => {
+    html += `
+      <div class="uni-stage-header">
+        <span class="uni-stage-num">${String.fromCharCode(65 + sIdx)}</span>
+        <span class="uni-stage-title">${stage.stage}</span>
+      </div>
+    `;
+
+    stage.items.forEach(it => {
+      // Get cumulative price for bar
+      let cumulative = null;
+      if (it.harga !== null) {
+        cumulative = it.harga;
+        lastCumulative = it.harga;
+      }
+
+      // Row classification for styling
+      const rowClass = [
+        cumulative !== null && !it.bold && !it.final && !it.spike ? 'is-base' : '',
+        it.bold && !it.final ? 'is-checkpoint' : '',
+        it.spike ? 'is-spike' : '',
+        it.byprod ? 'is-byprod' : '',
+        it.final ? 'is-final' : '',
+      ].filter(Boolean).join(' ');
+
+      // BAR HTML — three patterns:
+      // 1. Has cumulative price → full chunky bar from left to that price (most rows)
+      // 2. Byproduct → small green tag near last cumulative
+      // 3. Cost-only (rare) → small gray tag near last cumulative
+      let barHtml = '';
+
+      if (cumulative !== null) {
+        const w = (cumulative / RANGE_MAX * 100);
+        let barCls = 'cumulative';
+        let prefix = '';
+
+        if (it.final) {
+          barCls += ' final';
+          prefix = 'harga pengecer';
+        } else if (it.spike) {
+          barCls += ' spike';
+          prefix = 'setelah susut';
+        } else if (it.bold) {
+          barCls += ' checkpoint';
+        }
+
+        const prefixHtml = prefix ? `<span class="lbl-prefix">${prefix}</span>` : '';
+        barHtml = `<div class="uni-bar ${barCls}" style="width: ${w.toFixed(2)}%">
+          <span class="uni-bar-val">${prefixHtml}<span>Rp ${fmt(cumulative)}</span></span>
+        </div>`;
+
+      } else if (it.byprod && it.biaya !== null && it.biaya > 0) {
+        // Byproduct offset — emerald tag at last cumulative position
+        const startPct = (lastCumulative / RANGE_MAX * 100);
+        const tagWidth = Math.max((it.biaya / RANGE_MAX * 100) * 4, 8);
+        const adjustedStart = Math.max(0, startPct - tagWidth - 0.5);
+        barHtml = `<div class="uni-bar byprod-tag" style="left: ${adjustedStart.toFixed(2)}%; width: ${tagWidth.toFixed(2)}%">
+          <span class="uni-bar-val">−Rp ${fmt(it.biaya)}</span>
+        </div>`;
+
+      } else if (it.biaya !== null && it.biaya > 0) {
+        // Cost-only — gray tag at last cumulative position
+        const startPct = (lastCumulative / RANGE_MAX * 100);
+        const tagWidth = Math.max((it.biaya / RANGE_MAX * 100) * 3, 7);
+        const adjustedStart = Math.max(0, startPct - tagWidth - 0.5);
+        barHtml = `<div class="uni-bar cost-only" style="left: ${adjustedStart.toFixed(2)}%; width: ${tagWidth.toFixed(2)}%">
+          <span class="uni-bar-val">+Rp ${fmt(it.biaya)}</span>
+        </div>`;
+      }
+      // else: empty bar zone (very rare — items with no harga and no biaya, e.g. "tidak dihasilkan" placeholders)
+
+      // RIGHT METADATA COLUMNS
+      let biayaDisplay = '<span class="uni-dash">−</span>';
+      let biayaClass = '';
+      if (it.biaya !== null && it.biaya > 0) {
+        if (it.byprod) {
+          biayaDisplay = '−Rp ' + fmt(it.biaya);
+          biayaClass = 'byprod';
+        } else {
+          biayaDisplay = '+Rp ' + fmt(it.biaya);
+          biayaClass = 'delta-pos';
+        }
+      }
+
+      let susutDisplay = '<span class="uni-dash">−</span>';
+      let susutClass = '';
+      if (it.susut !== null) {
+        susutDisplay = it.susut;
+        susutClass = it.byprod ? 'byprod' : (it.susut === '0%' ? 'zero' : '');
+      }
+
+      const rdmDisplay = it.rdm !== null ? it.rdm : '<span class="uni-dash">−</span>';
+
+      html += `
+        <div class="uni-row ${rowClass}">
+          <div class="uni-num">${it.no}</div>
+          <div class="uni-label">
+            ${it.item}
+            ${it.note ? `<span class="item-note">${it.note}</span>` : ''}
+            ${it.spec ? `<span class="item-spec">spec: ${it.spec}</span>` : ''}
+          </div>
+          <div class="uni-bar-zone">${barHtml}</div>
+          <div class="uni-biaya ${biayaClass}">${biayaDisplay}</div>
+          <div class="uni-susut ${susutClass}">${susutDisplay}</div>
+          <div class="uni-rdm">${rdmDisplay}</div>
+        </div>
+      `;
+    });
+  });
+
+  container.innerHTML = html;
+}
+
+
+// ============================================================
+// EVENT BINDINGS
+// ============================================================
+function setupGradeToggle() {
+  document.querySelectorAll('.grade-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.grade = btn.dataset.grade;
+      document.querySelectorAll('.grade-toggle button').forEach(b => b.classList.toggle('active', b === btn));
+      renderAll();
+    });
+  });
+}
+
+function setupWilayahSelect() {
+  const sel = document.getElementById('wilayahSelect');
+  sel.innerHTML = HET_DATA.map(h =>
+    `<option value="${h.id}" ${h.id === state.wilayahId ? 'selected' : ''}>${h.wilayah.length > 32 ? h.wilayah.substring(0, 30) + '…' : h.wilayah}</option>`
+  ).join('');
+  sel.onchange = (e) => {
+    state.wilayahId = e.target.value;
+    renderMap();
+    renderMapDetail();
+    calcUpdateOutput(); // Update calculator's VS HET section
+  };
+}
+
+// ============================================================
+// TOOLTIP HANDLER
+// ============================================================
+function setupTooltips() {
+  // Inject popovers into all .info-tip elements that don't have them yet
+  document.querySelectorAll('.info-tip').forEach(tip => {
+    const tipText = tip.dataset.tip;
+    if (!tipText) return;
+    // Skip if already has popover
+    if (tip.querySelector('.info-tip-popover')) return;
+
+    const popover = document.createElement('div');
+    popover.className = 'info-tip-popover';
+    // Convert <strong> markers from data attribute
+    popover.innerHTML = tipText;
+    tip.appendChild(popover);
+  });
+
+  // Single delegate handler — toggle on click, close others
+  document.addEventListener('click', (e) => {
+    const tip = e.target.closest('.info-tip');
+    if (tip) {
+      e.stopPropagation();
+      const wasActive = tip.classList.contains('active');
+      // Close all
+      document.querySelectorAll('.info-tip.active').forEach(t => t.classList.remove('active'));
+      // Toggle this one
+      if (!wasActive) tip.classList.add('active');
+    } else {
+      // Click outside — close all
+      document.querySelectorAll('.info-tip.active').forEach(t => t.classList.remove('active'));
+    }
+  });
+
+  // Prevent popover content clicks from closing
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.info-tip-popover')) e.stopPropagation();
+  }, true);
+}
+
+// ============================================================
+// CALCULATOR — what-if simulation using waterfall step deltas
+// User adjusts each step's delta, total = sum of deltas
+// ============================================================
+const calcState = {
+  values: {},      // { stepId: currentValue } — adjustable per step
+  defaults: {},    // snapshot of default values per grade
+  isDirty: false,
+};
+
+function calcInitDefaults() {
+  // Take WATERFALL deltas as defaults — reconcile to PDF totals
+  const wf = WATERFALL[state.grade];
+  calcState.defaults = {};
+  calcState.values = {};
+  wf.forEach(step => {
+    // Step "start" delta = 6500 (the base GKP), other deltas = the price addition
+    const val = step.id === 'start' ? step.to : step.delta;
+    calcState.defaults[step.id] = val;
+    calcState.values[step.id] = val;
+  });
+  calcState.isDirty = false;
+}
+
+function calcGetTotal() {
+  return Object.values(calcState.values).reduce((a, b) => a + b, 0);
+}
+
+function calcGetDefaultTotal() {
+  return Object.values(calcState.defaults).reduce((a, b) => a + b, 0);
+}
+
+function calcRender() {
+  const wf = WATERFALL[state.grade];
+  const inputs = document.getElementById('calcInputs');
+  inputs.innerHTML = wf.map((step, i) => {
+    const val = calcState.values[step.id];
+    const def = calcState.defaults[step.id];
+    const dirty = val !== def;
+    // Range scale: ±60% of default (or sensible bounds for GKP base)
+    let min, max, stepSize;
+    if (step.id === 'start') {
+      min = 4000; max = 10000; stepSize = 100;
+    } else {
+      // For deltas: range from 0 to 1.6× default, but cap min at 0
+      min = 0;
+      max = Math.max(Math.ceil(def * 1.6 / 100) * 100, 200);
+      stepSize = Math.max(Math.round(def / 100) * 5, 5);
+    }
+    return `
+      <div class="calc-row" data-step="${step.id}">
+        <div class="calc-row-head">
+          <span class="calc-row-label"><span class="calc-step-no">${(i+1).toString().padStart(2,'0')}</span>${step.label}</span>
+          <span class="calc-row-value ${dirty ? 'dirty' : ''}" id="calcVal-${step.id}">Rp ${fmt(val)}</span>
+        </div>
+        <div class="calc-slider-wrap">
+          <input type="range" class="calc-slider"
+                 min="${min}" max="${max}" step="${stepSize}"
+                 value="${val}" data-step="${step.id}">
+          <span class="calc-default-marker">def Rp ${fmt(def)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Bind sliders
+  inputs.querySelectorAll('.calc-slider').forEach(slider => {
+    slider.addEventListener('input', e => {
+      const stepId = e.target.dataset.step;
+      const newVal = parseInt(e.target.value);
+      calcState.values[stepId] = newVal;
+      calcState.isDirty = true;
+
+      // Update single-row display
+      const valEl = document.getElementById('calcVal-' + stepId);
+      const def = calcState.defaults[stepId];
+      valEl.textContent = 'Rp ' + fmt(newVal);
+      valEl.classList.toggle('dirty', newVal !== def);
+
+      calcUpdateOutput();
+    });
+  });
+
+  calcUpdateOutput();
+}
+
+function calcUpdateOutput() {
+  const total = calcGetTotal();
+  const defaultTotal = calcGetDefaultTotal();
+  const delta = total - defaultTotal;
+
+  document.getElementById('calcTotal').textContent = fmt(total);
+
+  // VS default
+  const vsDefaultEl = document.getElementById('calcVsDefault');
+  if (delta === 0) {
+    vsDefaultEl.innerHTML = `default Rp ${fmt(defaultTotal)} · <strong>nilai default</strong>`;
+    vsDefaultEl.className = 'calc-output-delta';
+  } else {
+    const sign = delta > 0 ? '+' : '−';
+    vsDefaultEl.innerHTML = `default Rp ${fmt(defaultTotal)} · <strong>${sign}Rp ${fmt(Math.abs(delta))}</strong>`;
+    vsDefaultEl.className = 'calc-output-delta ' + (delta > 0 ? 'positive' : 'negative');
+  }
+
+  // VS HET
+  const wilayah = HET_DATA.find(h => h.id === state.wilayahId);
+  if (wilayah) {
+    const het = state.grade === 'medium' ? wilayah.medium : wilayah.premium;
+    const vsHet = total - het;
+    const vsHetPct = (vsHet / het * 100);
+
+    document.getElementById('calcHetWilayah').textContent = wilayah.wilayah;
+    document.getElementById('calcHetValue').textContent = `HET Rp ${fmt(het)}`;
+
+    const status = document.getElementById('calcStatus');
+    const arrow = document.getElementById('calcStatusArrow');
+    const text = document.getElementById('calcStatusText');
+
+    if (vsHet > 0) {
+      status.className = 'calc-output-status';
+      arrow.textContent = '▲';
+      text.textContent = `Rp ${fmt(vsHet)} di atas HET (+${vsHetPct.toFixed(1).replace('.', ',')}%)`;
+    } else if (vsHet < 0) {
+      status.className = 'calc-output-status under';
+      arrow.textContent = '▼';
+      text.textContent = `Rp ${fmt(Math.abs(vsHet))} di bawah HET (−${Math.abs(vsHetPct).toFixed(1).replace('.', ',')}%)`;
+    } else {
+      status.className = 'calc-output-status under';
+      arrow.textContent = '◆';
+      text.textContent = 'Tepat di HET';
+    }
+  }
+
+  // Update dirty tag
+  const tag = document.getElementById('calcDirtyTag');
+  if (calcState.isDirty) {
+    tag.textContent = 'MODIFIED';
+    tag.classList.add('alert');
+  } else {
+    tag.textContent = 'DEFAULT';
+    tag.classList.remove('alert');
+  }
+}
+
+function calcReset() {
+  calcInitDefaults();
+  calcRender();
+}
+
+// Bind reset button (once on initial setup)
+function calcSetupResetButton() {
+  const btn = document.getElementById('calcResetBtn');
+  if (btn && !btn.dataset.bound) {
+    btn.addEventListener('click', calcReset);
+    btn.dataset.bound = '1';
+  }
+}
+
+// ============================================================
+// DRAWER TOGGLE
+// ============================================================
+function setupCalcDrawer() {
+  const fab = document.getElementById('calcFab');
+  const drawer = document.getElementById('calcDrawer');
+  const overlay = document.getElementById('calcOverlay');
+  const closeBtn = document.getElementById('calcDrawerClose');
+  const closeBtnBottom = document.getElementById('calcDrawerCloseBottom');
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    fab.classList.add('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    overlay.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    fab.classList.remove('hidden');
+    document.body.style.overflow = '';
+  }
+
+  fab.addEventListener('click', openDrawer);
+  closeBtn.addEventListener('click', closeDrawer);
+  closeBtnBottom.addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+
+  // Close on ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && drawer.classList.contains('open')) {
+      closeDrawer();
+    }
+  });
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll() {
+  renderKPIs();
+  renderUniWaterfall(); // Combined visual chart + table
+  renderMap();
+  renderMapDetail();
+  renderFunnel();
+  renderSideProductTreemap();
+  renderComparison();
+  // Calculator: re-init defaults when grade changes, then render
+  calcInitDefaults();
+  calcRender();
+  calcSetupResetButton();
+  setupTooltips();
+}
+
+// INIT
+setupGradeToggle();
+setupWilayahSelect();
+setupCalcDrawer();
+renderAll();
+</script>
+</body>
+</html>
