@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Rice Journey · Dashboard Distribusi Beras · Kemenko Pangan RI</title>
-<meta name="description" content="Dashboard analitik distribusi beras Indonesia: cost structure resmi Bapanas, HET 8 zona, waterfall biaya per tahap, side product breakdown." />
+<meta name="description" content="Dashboard analitik distribusi beras Indonesia: cost structure resmi Bapanas, HET 3 zona terbaru, waterfall biaya per tahap, side product breakdown." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,500;9..144,0,600;9..144,1,400;9..144,1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1960,7 +1960,7 @@
     </div>
     <div class="page-meta">
       <strong>Sumber:</strong> Bapanas, Update 12 Aug 2024<br>
-      <strong>HET:</strong> KepKa Bapanas 299/2025<br>
+      <strong>HET:</strong> 3 zona · Badan Pangan Nasional<br>
       <strong>Status:</strong> 100% data resmi
     </div>
   </div>
@@ -2086,14 +2086,14 @@
     <div class="section-header">
       <span class="section-num">05</span>
       <span class="section-title">HET <em>per Zona</em></span>
-      <span class="section-sub">8 wilayah regulasi · sumber: KepKa Bapanas 299 Tahun 2025 (PDF page 1)</span>
+      <span class="section-sub">3 zona regulasi · sumber: Badan Pangan Nasional · update terbaru menggantikan struktur 8 wilayah lama</span>
     </div>
 
     <!-- INDONESIA MAP (full width section) -->
     <div class="panel span-8">
       <div class="panel-head">
         <div>
-          <div class="panel-title">Peta <em>Indonesia</em> · 8 zona HET. <span class="info-tip" data-tip="<strong>HET · Harga Eceran Tertinggi</strong>Batas atas harga jual beras di tingkat pengecer, ditetapkan pemerintah. Berlaku 8 zona yang berbeda berdasarkan biaya logistik dan jarak dari sentra produksi. Sumber: KepKa Bapanas 299/2025 (PDF page 1).">?</span></div>
+          <div class="panel-title">Peta <em>Indonesia</em> · 3 zona HET. <span class="info-tip" data-tip="<strong>HET · Harga Eceran Tertinggi</strong>Batas atas harga jual beras di tingkat pengecer, ditetapkan pemerintah. Zonasi terbaru: 3 zona berdasarkan biaya logistik & jarak dari sentra produksi (menggantikan struktur 8 wilayah lama dari KepKa 299/2025). Sumber: Badan Pangan Nasional.">?</span></div>
           <div class="panel-sub">geographic outline · Natural Earth · klik untuk pilih zona</div>
         </div>
       </div>
@@ -2119,23 +2119,23 @@
         <text x="903" y="217" class="map-label" text-anchor="middle">PAPUA</text>
       </svg>
       <div class="map-legend">
-        <div class="map-legend-item" data-zona-group="low">
+        <div class="map-legend-item" data-zona-group="zona-1">
           <span class="legend-swatch tier-low"></span>
-          <span class="legend-text">Jawa-Lampung-Sumsel · Bali-NTB · Sulawesi</span>
-          <span class="legend-value">13.500 / 14.900</span>
+          <span class="legend-text"><strong>Zona 1</strong> · Jawa, Lampung, Sumsel, Bali, NTB, Sulawesi</span>
+          <span class="legend-value">12.500 / 14.900</span>
         </div>
-        <div class="map-legend-item" data-zona-group="mid">
+        <div class="map-legend-item" data-zona-group="zona-2">
           <span class="legend-swatch tier-mid"></span>
-          <span class="legend-text">Sumatra (lain) · NTT · Kalimantan</span>
-          <span class="legend-value">14.000 / 15.400</span>
+          <span class="legend-text"><strong>Zona 2</strong> · Sumatra (lain) · NTT · Kalimantan</span>
+          <span class="legend-value">13.100 / 15.400</span>
         </div>
-        <div class="map-legend-item" data-zona-group="high">
+        <div class="map-legend-item" data-zona-group="zona-3">
           <span class="legend-swatch tier-high"></span>
-          <span class="legend-text">Maluku · Papua</span>
-          <span class="legend-value">15.500 / 15.800</span>
+          <span class="legend-text"><strong>Zona 3</strong> · Maluku · Papua</span>
+          <span class="legend-value">13.500 / 15.800</span>
         </div>
         <div style="font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--muted); margin-top:4px; padding-top:8px; border-top:1px dashed var(--line); letter-spacing:0.04em;">
-          Harga = HET medium / premium (Rp/kg). Pengelompokan visual berdasarkan tingkat harga — dokumen Bapanas list 8 wilayah individual (lihat tabel).
+          Harga = HET medium / premium (Rp/kg). Sumber: Badan Pangan Nasional · update terbaru. Klik pulau untuk pilih zona.
         </div>
       </div>
     </div>
@@ -2144,7 +2144,7 @@
     <div class="panel span-4">
       <div class="panel-head">
         <div>
-          <div class="panel-title"><em>8 Wilayah</em> & HET aktif.</div>
+          <div class="panel-title"><em>3 Zona</em> & HET aktif.</div>
           <div class="panel-sub">klik baris untuk pilih · zona aktif tampil ringkas</div>
         </div>
       </div>
@@ -2231,16 +2231,49 @@
 // ============================================================
 // DATA
 // ============================================================
+// HET ZONASI BARU · Badan Pangan Nasional · 3 Zona
+// (sebelumnya KepKa 299/2025 mengatur 8 wilayah dengan struktur lama)
 const HET_DATA = [
-  { id: 'jawa-lampung-sumsel', wilayah: 'Jawa, Lampung, Sumatera Selatan', medium: 13500, premium: 14900, tier: 'low', note: 'Sentra produksi utama' },
-  { id: 'sumatera-lain', wilayah: 'Aceh, Sumut, Sumbar, Bengkulu, Riau, Kepri, Jambi, Babel', medium: 14000, premium: 15400, tier: 'mid', note: 'Sumatra non-sentra' },
-  { id: 'bali-ntb', wilayah: 'Bali & Nusa Tenggara Barat', medium: 13500, premium: 14900, tier: 'low', note: 'Sentra Lombok' },
-  { id: 'ntt', wilayah: 'Nusa Tenggara Timur', medium: 14000, premium: 15400, tier: 'mid', note: 'Konsumen, jauh dari sentra' },
-  { id: 'sulawesi', wilayah: 'Sulawesi', medium: 13500, premium: 14900, tier: 'low', note: 'Sentra Sulsel' },
-  { id: 'kalimantan', wilayah: 'Kalimantan', medium: 14000, premium: 15400, tier: 'mid', note: 'Sentra Kalsel' },
-  { id: 'maluku', wilayah: 'Maluku', medium: 15500, premium: 15800, tier: 'high', note: 'Logistik antarpulau' },
-  { id: 'papua', wilayah: 'Papua', medium: 15500, premium: 15800, tier: 'high', note: 'Logistik antarpulau' }
+  {
+    id: 'zona-1',
+    nama: 'Zona 1',
+    wilayah: 'Jawa, Lampung, Sumsel, Bali, NTB, Sulawesi',
+    medium: 12500,
+    premium: 14900,
+    tier: 'low',
+    note: 'Sentra produksi & jalur logistik utama',
+    // Geographic regions yang masuk ke zona ini (untuk highlight peta)
+    geoRegions: ['jawa-lampung-sumsel', 'bali-ntb', 'sulawesi']
+  },
+  {
+    id: 'zona-2',
+    nama: 'Zona 2',
+    wilayah: 'Sumatra (selain Lampung & Sumsel), NTT, Kalimantan',
+    medium: 13100,
+    premium: 15400,
+    tier: 'mid',
+    note: 'Konsumen domestik · jangkauan menengah',
+    geoRegions: ['sumatera-lain', 'ntt', 'kalimantan']
+  },
+  {
+    id: 'zona-3',
+    nama: 'Zona 3',
+    wilayah: 'Maluku, Papua',
+    medium: 13500,
+    premium: 15800,
+    tier: 'high',
+    note: 'Logistik antarpulau ekstrim',
+    geoRegions: ['maluku', 'papua']
+  }
 ];
+
+// Helper: dari geographic region (data-zona attribute di SVG path) → zona id
+function getZonaIdByGeo(geoId) {
+  for (const zona of HET_DATA) {
+    if (zona.geoRegions.includes(geoId)) return zona.id;
+  }
+  return null;
+}
 
 // Waterfall steps — semua angka dari PDF Bapanas exact
 const WATERFALL = {
@@ -2472,7 +2505,7 @@ const PDF_DETAIL = {
 // ============================================================
 const state = {
   grade: 'medium',
-  wilayahId: 'jawa-lampung-sumsel'
+  wilayahId: 'zona-1' // 'zona-1' | 'zona-2' | 'zona-3'
 };
 
 // ============================================================
@@ -2567,15 +2600,22 @@ function renderWaterfall() {
 function renderMap() {
   const map = document.getElementById('indonesiaMap');
   const regions = map.querySelectorAll('.map-region');
+  const activeZona = HET_DATA.find(z => z.id === state.wilayahId);
+  const activeGeoIds = activeZona ? activeZona.geoRegions : [];
 
   regions.forEach(r => {
-    r.classList.toggle('active', r.dataset.zona === state.wilayahId);
+    const geoId = r.dataset.zona; // historical SVG attr - now represents geographic region
+    r.classList.toggle('active', activeGeoIds.includes(geoId));
     r.onclick = () => {
-      state.wilayahId = r.dataset.zona;
-      document.getElementById('wilayahSelect').value = state.wilayahId;
-      renderMap();
-      renderMapDetail();
-      if (typeof calcUpdateOutput === 'function') calcUpdateOutput();
+      // Find which zona this geo region belongs to
+      const zonaId = getZonaIdByGeo(geoId);
+      if (zonaId) {
+        state.wilayahId = zonaId;
+        document.getElementById('wilayahSelect').value = state.wilayahId;
+        renderMap();
+        renderMapDetail();
+        if (typeof calcUpdateOutput === 'function') calcUpdateOutput();
+      }
     };
   });
 }
@@ -2590,7 +2630,7 @@ function renderMapDetail() {
   const overOrOk = diff > 0 ? 'over' : 'ok';
   const arrow = diff > 0 ? '▲' : '▼';
 
-  document.getElementById('mapDetailName').textContent = w.wilayah;
+  document.getElementById('mapDetailName').textContent = `${w.nama} · ${w.wilayah}`;
   document.getElementById('mapDetailRows').innerHTML = `
     <div class="map-detail-row"><span class="lbl">HET ${state.grade}</span><span class="val">Rp ${fmt(het)}</span></div>
     <div class="map-detail-row"><span class="lbl">Hitung Bapanas</span><span class="val">Rp ${fmt(final)}</span></div>
@@ -2609,7 +2649,7 @@ function renderWilayahFullList() {
     const price = state.grade === 'medium' ? h.medium : h.premium;
     return `
       <div class="wilayah-list-row ${h.id === state.wilayahId ? 'active' : ''}" data-zona="${h.id}">
-        <span class="name"><span class="num">${i+1}</span>${h.wilayah}</span>
+        <span class="name"><strong>${h.nama}</strong> · ${h.wilayah}</span>
         <span class="price">Rp ${fmt(price)}</span>
       </div>
     `;
@@ -2885,7 +2925,7 @@ function setupGradeToggle() {
 function setupWilayahSelect() {
   const sel = document.getElementById('wilayahSelect');
   sel.innerHTML = HET_DATA.map(h =>
-    `<option value="${h.id}" ${h.id === state.wilayahId ? 'selected' : ''}>${h.wilayah.length > 32 ? h.wilayah.substring(0, 30) + '…' : h.wilayah}</option>`
+    `<option value="${h.id}" ${h.id === state.wilayahId ? 'selected' : ''}>${h.nama} · ${h.wilayah.length > 28 ? h.wilayah.substring(0, 26) + '…' : h.wilayah}</option>`
   ).join('');
   sel.onchange = (e) => {
     state.wilayahId = e.target.value;
